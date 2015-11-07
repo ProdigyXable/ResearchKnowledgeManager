@@ -11,20 +11,30 @@ package researchknowledgemanager;
  */
 public class ResearchKnowledgeManager
 {
-    static boolean debug = true;
+    static boolean debugMode = true;
     
     void debugMode(boolean status)
     {
-       if(status)
+        if(status)
         {
-            System.out.println("System is running in debug mode");
+            System.err.println("System is executing INSIDE debug mode!");
         } 
+       
+        else
+        {
+            System.err.println("System is executing OUTSIDE of debug mode");
+        }
 
+    }
+    
+    ResearchKnowledgeManager()
+    {
+        this.debugMode(debugMode);
     }
  
     public static void main(String[] args)
     {
-        ResearchKnowledgeManager ResearchManager = new ResearchKnowledgeManager();
+        ResearchKnowledgeManager researchManager = new ResearchKnowledgeManager();
     }
     
 }
