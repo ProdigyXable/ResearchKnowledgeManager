@@ -15,7 +15,6 @@ import java.util.Vector;
 public class ResearchKnowledgeManager {
 
     // Used for easy debugging within the system
-
     boolean debug = true;
     boolean initializeStatus = false;
     long lastOpened = 0;
@@ -214,11 +213,10 @@ public class ResearchKnowledgeManager {
     }
 
     public static void main(String[] args) {
-        ResearchKnowledgeManager researchManager = new ResearchKnowledgeManager();
+        ResearchKnowledgeManager rm = new ResearchKnowledgeManager();
 
-        // Testing the indexing capabilities. This should list all the files in the folder
-        researchManager.exit();
-
+        String[] buffer = rm.fileIndexer.indexFilesAll(rm.repositoryFolder, false, rm).split(rm.fileIndexer.indexParseDelimeter);
+        rm.fileIndexer.saveIndexAll(buffer, rm.saveDirectory);
         return;
     }
 }

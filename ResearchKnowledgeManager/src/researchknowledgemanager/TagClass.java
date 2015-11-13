@@ -13,13 +13,13 @@ public class TagClass {
     int incrementCount = 20;
 
     // Array of Filenames
-    Vector<String> associatedFiles = new Vector<>();
+    Vector<String> associatedFiles;
 
     // Associated keywords for the tag
     Vector<String> keywords;
 
     TagClass(String Name) {
-        this.TagName = Name;
+        this.TagName = Name.toLowerCase();
         this.associatedFiles = new Vector<>(incrementCount);
         this.keywords = new Vector<>(incrementCount);
     }
@@ -27,13 +27,13 @@ public class TagClass {
     String toString(String delimeter, boolean debug) {
         String buffer = this.TagName;
         for (int i = 0; i < associatedFiles.size(); i++) {
-            buffer += delimeter + associatedFiles.get(i);
+            buffer += delimeter + associatedFiles.get(i).toLowerCase();
         }
 
         buffer += System.lineSeparator() + "keywords";
 
         for (int i = 0; i < keywords.size(); i++) {
-            buffer += delimeter + keywords.get(i);
+            buffer += delimeter + keywords.get(i).toLowerCase();
         }
 
         if (debug) {
@@ -48,8 +48,8 @@ public class TagClass {
         this.keywords.trimToSize();
 
         for (int i = 0; i < newKeywords.length; i++) {
-            if (!this.keywords.contains(newKeywords[i])) {
-                this.keywords.add(newKeywords[i]);
+            if (!this.keywords.contains(newKeywords[i].toLowerCase())) {
+                this.keywords.add(newKeywords[i].toLowerCase());
             }
         }
     }
@@ -66,18 +66,25 @@ public class TagClass {
         this.associatedFiles.trimToSize();
 
         for (int i = 0; i < newFiles.length; i++) {
-            if (!this.associatedFiles.contains(newFiles[i])) {
-                this.associatedFiles.add(newFiles[i]);
+            if (!this.associatedFiles.contains(newFiles[i].toLowerCase())) {
+                this.associatedFiles.add(newFiles[i].toLowerCase());
             }
         }
     }
 
+    void addFiles(String newFile) {
+        this.associatedFiles.trimToSize();
+        if (!this.associatedFiles.contains(newFile.toLowerCase())) {
+            this.associatedFiles.add(newFile.toLowerCase());
+        }
+    }
+
     boolean removeKeyword(String deletedKeyword) {
-        return this.keywords.remove(deletedKeyword);
+        return this.keywords.remove(deletedKeyword.toLowerCase());
     }
 
     boolean removeFile(String deletedFile) {
-        return this.associatedFiles.remove(deletedFile);
+        return this.associatedFiles.remove(deletedFile.toLowerCase());
     }
 
     int keywordSize() {

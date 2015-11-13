@@ -22,7 +22,7 @@ public class Indexer {
         this.lastOpened = lastModified;
     }
 
-    String indexFilesAll(File path, boolean print) {
+    String indexFilesAll(File path, boolean print, ResearchKnowledgeManager rm) {
         File[] result = path.listFiles();
         String validResults = "";
 
@@ -39,10 +39,12 @@ public class Indexer {
                         System.out.println(result[i].toString());
                     }
 
+                    // Files can be preemptively put into tags based on their file names here
+                    // We can also search the content of files here if needed
                     validResults += result[i].toString() + this.indexParseDelimeter;
                 } else {
                     // Recursively iterate all the files in a folder
-                    validResults += this.indexFilesAll(result[i], print);
+                    validResults += this.indexFilesAll(result[i], print, rm);
                 }
             }
         }
@@ -50,7 +52,7 @@ public class Indexer {
         return validResults;
     }
 
-    String indexFilesNew(File path, boolean print) {
+    String indexFilesNew(File path, boolean print, ResearchKnowledgeManager rm) {
         String validResults = "";
         File[] potentialNew = path.listFiles();
 
@@ -62,8 +64,11 @@ public class Indexer {
                 if (debug) {
                     System.err.println("\t" + potentialNew[i].toString() + " is detected as a new file!");
                 }
+
+                // Files can be preemptively put into tags based on their file names here
+                // We can also search the content of files here if needed
             } else if (potentialNew[i].isDirectory()) {
-                validResults += this.indexFilesNew(potentialNew[i], print) + indexParseDelimeter;
+                validResults += this.indexFilesNew(potentialNew[i], print, rm) + indexParseDelimeter;
             }
         }
 
@@ -72,14 +77,16 @@ public class Indexer {
 
     boolean saveIndexAll(String[] fileList, File saveDirectory) {
         try {
-            fileWrite = new FileWriter(saveDirectory.toString() + "\\" + indexFileName, false);
+            String filename = saveDirectory.toString() + "\\" + indexFileName;
+            fileWrite = new FileWriter(filename, false);
 
             for (int i = 0; i < fileList.length; i++) {
-                this.fileWrite.write(fileList[i] + this.indexParseDelimeter);
+                this.fileWrite.write(fileList[i].toLowerCase() + this.indexParseDelimeter);
             }
 
             if (this.debug) {
-                System.out.println("saveIndexAll save function successful!");
+                System.out.println("\nsaveIndexAll save function successful!");
+                System.err.println("Saving data to \t" + filename);
             }
 
             this.fileWrite.flush();
