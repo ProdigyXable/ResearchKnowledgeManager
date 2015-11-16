@@ -26,7 +26,11 @@ public class FileClass {
         FileName = file.toString().toLowerCase();
     }
 
-    String toString(String delimeter, boolean debug) {
+    public String toString() {
+        return (this.FileName);
+    }
+
+    String toStringSpecial(String delimeter, boolean debug) {
         String buffer = this.FileName;
         for (int i = 0; i < associatedTags.size(); i++) {
             buffer += delimeter + associatedTags.get(i).toLowerCase();

@@ -24,20 +24,33 @@ public class TagClass {
         this.keywords = new Vector<>(incrementCount);
     }
 
-    String toString(String delimeter, boolean debug) {
+    public String toString() {
+        return (this.TagName);
+    }
+
+    String toSpecialString(String delimeter, boolean debug) {
         String buffer = this.TagName;
         for (int i = 0; i < associatedFiles.size(); i++) {
             buffer += delimeter + associatedFiles.get(i).toLowerCase();
         }
 
-        buffer += System.lineSeparator() + "keywords";
+        if (this.keywords.size() > 0) {
+            buffer += System.lineSeparator() + "keywords";
 
-        for (int i = 0; i < keywords.size(); i++) {
-            buffer += delimeter + keywords.get(i).toLowerCase();
+            for (int i = 0; i < keywords.size(); i++) {
+                buffer += delimeter + keywords.get(i).toLowerCase();
+            }
+        } else {
+            if (debug) {
+                System.err.println();
+                System.err.println("This tags does not contain any keywords!");
+                System.err.println();
+            }
         }
 
         if (debug) {
             System.out.println("The data for this tag is as follows:");
+            System.out.println("----------");
             System.out.println(buffer);
         }
 

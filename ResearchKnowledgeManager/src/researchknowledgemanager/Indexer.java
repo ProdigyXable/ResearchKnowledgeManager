@@ -15,11 +15,15 @@ public class Indexer {
     long lastOpened;
     String indexParseDelimeter = "\t";
     String indexFileName = "RKM_Manager_Index.txt";
-    FileWriter fileWrite;
+    String indexAllReturn = "";
+    String indexNewReturn = "";
+    FileWriter indexFileWrite;
+    UserInterface ui;
 
-    Indexer(boolean debugFlag, File file, long lastModified) {
+    Indexer(boolean debugFlag, File file, long lastModified, UserInterface ui) {
         this.debug = debugFlag;
         this.lastOpened = lastModified;
+        this.ui = ui;
     }
 
     String indexFilesAll(File path, boolean print, ResearchKnowledgeManager rm) {
@@ -28,15 +32,19 @@ public class Indexer {
 
         if (result == null) {
             if (this.debug) {
-                System.err.println("Input \"path\" parameter for indexFiles() is not a valid directory! --- " + path.toString() + "\t indexFiles()");
+                System.err.println("Input \"path\" parameter for indexFiles() is not a valid directory! --- " + path.toString());
             }
+            rm.ui.newMessage(path.toString() + " is not a valid directory path!");
+            rm.ui.newMessage("Exiting out of the current action...");
+            rm.ui.newMessage(rm.lineSeparator);
+
         } else {
             // Iterates through the Files in the File[] result array
             for (int i = 0; i < result.length; i++) {
                 // Outputs an error if path is not a folder
                 if (!result[i].isDirectory()) {
                     if (this.debug && print) {
-                        System.out.println(result[i].toString());
+                        System.out.println("File found -> " + result[i].toString());
                     }
 
                     // Files can be preemptively put into tags based on their file names here
@@ -48,7 +56,7 @@ public class Indexer {
                 }
             }
         }
-
+        rm.updateLastModified();
         return validResults;
     }
 
@@ -61,9 +69,7 @@ public class Indexer {
             if (!potentialNew[i].isDirectory() && potentialNew[i].lastModified() > this.lastOpened) {
                 validResults += potentialNew[i].toString() + this.indexParseDelimeter;
 
-                if (debug) {
-                    System.err.println("\t" + potentialNew[i].toString() + " is detected as a new file!");
-                }
+                rm.ui.newMessage("New file detected! ->" + potentialNew[i].toString());
 
                 // Files can be preemptively put into tags based on their file names here
                 // We can also search the content of files here if needed
@@ -71,61 +77,81 @@ public class Indexer {
                 validResults += this.indexFilesNew(potentialNew[i], print, rm) + indexParseDelimeter;
             }
         }
-
+        rm.updateLastModified();
         return validResults;
+    }
+
+    boolean saveIndexAll(File saveDirectory) {
+
+        return saveIndexAll(this.indexAllReturn, saveDirectory);
+    }
+
+    boolean saveIndexAll(String files, File saveDirectory) {
+        return saveIndexAll(files.split(this.indexParseDelimeter), saveDirectory);
     }
 
     boolean saveIndexAll(String[] fileList, File saveDirectory) {
         try {
             String filename = saveDirectory.toString() + "\\" + indexFileName;
-            fileWrite = new FileWriter(filename, false);
+            indexFileWrite = new FileWriter(filename, false);
 
             for (int i = 0; i < fileList.length; i++) {
-                this.fileWrite.write(fileList[i].toLowerCase() + this.indexParseDelimeter);
+                this.indexFileWrite.write(fileList[i].toLowerCase() + this.indexParseDelimeter);
             }
 
-            if (this.debug) {
-                System.out.println("\nsaveIndexAll save function successful!");
-                System.err.println("Saving data to \t" + filename);
-            }
+            ui.newMessage("Successfully added files to the index!");
+            ui.newMessage(ui.rm.lineSeparator);
 
-            this.fileWrite.flush();
+            this.indexFileWrite.close();
             return true;
+
         } catch (IOException ex) {
 
-            if (this.debug) {
-                System.out.println("saveIndexAll save function unsuccessful!");
-                System.err.println("AN ERROR HAS OCCURRED trying to prepare a file for writing!\n" + ex.getMessage() + "\t Indexer()");
+            ui.newMessage("An error has occured when trying to add files to the system's index");
+            if (debug) {
+                System.err.println(ex.getMessage());
             }
+
+            ui.newMessage(ui.rm.lineSeparator);
+
+            this.indexFileWrite = null;
+            return false;
         }
 
-        this.fileWrite = null;
-        return false;
+    }
+
+    boolean saveIndexNew(File saveDirectory) {
+        return saveIndexNew(this.indexNewReturn, saveDirectory);
+    }
+
+    boolean saveIndexNew(String files, File saveDirectory) {
+        return saveIndexNew(files.split(this.indexParseDelimeter), saveDirectory);
     }
 
     boolean saveIndexNew(String[] fileList, File saveDirectory) {
         try {
-            fileWrite = new FileWriter(saveDirectory.toString() + "\\" + indexFileName, true);
+            indexFileWrite = new FileWriter(saveDirectory.toString() + "\\" + indexFileName, true);
 
             for (int i = 0; i < fileList.length; i++) {
-                this.fileWrite.write(fileList[i] + this.indexParseDelimeter);
+                this.indexFileWrite.write(fileList[i] + this.indexParseDelimeter);
             }
 
-            if (this.debug) {
-                System.out.println("saveIndexNew save function successful!");
-            }
+            ui.newMessage("Successfully added new files to the index!");
+            ui.newMessage(ui.rm.lineSeparator);
 
-            this.fileWrite.flush();
+            this.indexFileWrite.close();
             return true;
         } catch (IOException ex) {
 
-            if (this.debug) {
-                System.out.println("saveindexNew save function unsuccessful!");
-                System.err.println("AN ERROR HAS OCCURRED trying to prepare a file for writing!\n" + ex.getMessage() + "\t Indexer()");
+            ui.newMessage("An error has occured when trying to add new files to the system's index");
+            if (debug) {
+                System.err.println(ex.getMessage());
             }
+            ui.newMessage(ui.rm.lineSeparator);
+
+            this.indexFileWrite = null;
+            return false;
         }
 
-        this.fileWrite = null;
-        return false;
     }
 }
