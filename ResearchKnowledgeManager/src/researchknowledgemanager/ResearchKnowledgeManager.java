@@ -14,8 +14,14 @@ import java.util.Vector;
 
 public class ResearchKnowledgeManager {
 
+    enum activeState {
+
+        INACTIVE, READY, ACTIVE, PAUSED
+    }
+
     // Used for easy debugging within the system
     boolean debug = true;
+    activeState actionStatus = activeState.INACTIVE;
     boolean initializeStatus = false;
     long lastOpened = 0;
 
@@ -33,6 +39,11 @@ public class ResearchKnowledgeManager {
     String repoParentFolderName = "\\Research Knowledge Manager\\";
     String repoFileName = "repo.txt";
     String lastModifiedFileName = "lastmod.txt";
+
+    void setState(activeState state) {
+        actionStatus = state;
+        ui.handleState();
+    }
 
     void saveTime() throws IOException {
         FileWriter fileWrite = new FileWriter(dataDirectory.getAbsolutePath() + "\\" + this.lastModifiedFileName, false);
@@ -124,14 +135,33 @@ public class ResearchKnowledgeManager {
             ui.newMessage("Prompting user for repository folder");
         }
 
-        // Application logic for user input here...
-        // .
-        // .
-        // .
-        userInput = "C:\\Users\\Xable Enterprises\\Downloads\\TESTDOCS\\TESTDOCS\\";
-        File bufferFile = new File(userInput);
+        UserRepositoryPrompt buffer;
+        File bufferFile;
+        boolean invalidInput;
 
-        if (bufferFile.exists() && bufferFile.isDirectory()) {
+        do {
+            if (this.repositoryFolder != null) {
+                buffer = new UserRepositoryPrompt(this.ui, true, this.repositoryFolder.getAbsolutePath());
+            } else {
+                buffer = new UserRepositoryPrompt(this.ui, true, null);
+            }
+            userInput = buffer.userInput;
+
+            if (debug) {
+                System.err.println("User input is " + userInput);
+            }
+
+            bufferFile = new File(userInput);
+            invalidInput = !(bufferFile.exists() && bufferFile.isDirectory());
+
+            if (invalidInput && buffer.successfulExit) {
+                ui.newMessage("Invalid user input! Input does not exist or is not a directory!");
+                ui.newMessage(this.lineSeparator);
+            }
+
+        } while (buffer.successfulExit && invalidInput);
+
+        if (buffer.successfulExit) {
             this.repositoryFolder = bufferFile;
             FileWriter saveRepo = new FileWriter(this.dataDirectory.getAbsoluteFile() + "\\" + this.repoFileName);
             saveRepo.write(userInput);
@@ -140,17 +170,20 @@ public class ResearchKnowledgeManager {
             ui.newMessage("User input received and validated for repository folder -> " + repositoryFolder.getAbsolutePath());
             ui.newMessage(this.lineSeparator);
 
+            ui.FileExplorerTree.setModel(new FileTreeModelTree(repositoryFolder));
             return true;
         } else {
-            ui.newMessage("Invalid user input! Input does not exist or is not a directory!");
+            ui.newMessage("User action cancelled...");
             ui.newMessage(this.lineSeparator);
-            return false;
         }
+
+        return false;
     }
 
     boolean loadRepoFolder() {
         try {
             File saveDirectoryFile = new File(this.dataDirectory.getAbsolutePath() + "\\" + this.repoFileName);
+
             if (!this.dataDirectory.exists()) {
                 this.dataDirectory.mkdir();
 
@@ -166,7 +199,9 @@ public class ResearchKnowledgeManager {
                 }
 
                 saveDirectoryFile.createNewFile();
-                return askForRepository(saveDirectoryFile);
+                do {
+                } while (!this.askForRepository(saveDirectoryFile));
+                return true;
             } else {
 
                 ui.newMessage("Loading repository folder data... ");
@@ -176,20 +211,28 @@ public class ResearchKnowledgeManager {
                 FileReader saveDirectoryRead = new FileReader(saveDirectoryFile);
                 saveDirectoryRead.read(repoFolder);
 
-                this.repositoryFolder = new File(new String(repoFolder));
-                saveDirectoryRead.close();
-                if (this.repositoryFolder.exists() && this.repositoryFolder.isDirectory()) {
+                String buffer = new String(repoFolder);
+                if (!buffer.equals("")) {
+                    this.repositoryFolder = new File(buffer);
 
-                    ui.newMessage("Successfully loaded the repository folder");
+                    if (this.repositoryFolder.exists() && this.repositoryFolder.isDirectory()) {
 
+                        ui.newMessage("Successfully loaded the repository folder");
+
+                    } else {
+
+                        ui.newMessage("An invalid repository folder path was loaded! Rejecting the path!");
+
+                        repositoryFolder = null;
+                        return false;
+                    }
                 } else {
-
-                    ui.newMessage("An invalid repository folder path was loaded! Rejecting the path!");
-
-                    repositoryFolder = null;
-                    return false;
+                    ui.newMessage("Empty data detected... Prompting the user for input");
+                    do {
+                    } while (!this.askForRepository(saveDirectoryFile));
                 }
 
+                saveDirectoryRead.close();
                 return true;
             }
         } catch (IOException ex) {
@@ -322,6 +365,8 @@ public class ResearchKnowledgeManager {
             ui.newMessage("Clean operational not fully completed. Some files could not be deleted.");
             ui.newMessage("Please try manually deleting the files after closing this program ->" + this.dataDirectory.getAbsolutePath());
         }
+
+        ui.newMessage(this.lineSeparator);
     }
 
     public static void main(String[] args) {

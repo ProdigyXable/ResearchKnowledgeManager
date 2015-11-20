@@ -26,6 +26,34 @@ public class Indexer {
         this.ui = ui;
     }
 
+    int computeMaxFolderChild(File file) {
+
+        File[] buffer = file.listFiles();
+        int returnValue = 0;
+
+        if (buffer == null) {
+            System.err.println("File in question is " + file);
+            System.err.println("File can Read = " + file.canRead());
+            System.err.println("File can Execute = " + file.canExecute());
+            System.err.println("File can Write = " + file.canWrite());
+            System.err.println("File is hidden = " + file.isHidden());
+            System.err.println("There was a problem with the folder specified! -> " + file.toString());
+            return 0;
+        } else {
+            for (File data : buffer) {
+                if (!data.isHidden()) {
+                    if (data.isDirectory()) {
+                        returnValue += computeMaxFolderChild(data);
+                    } else {
+                        returnValue++;
+
+                    }
+                }
+            }
+            return returnValue;
+        }
+    }
+
     String indexFilesAll(File path, boolean print, ResearchKnowledgeManager rm) {
         File[] result = path.listFiles();
         String validResults = "";
@@ -34,6 +62,7 @@ public class Indexer {
             if (this.debug) {
                 System.err.println("Input \"path\" parameter for indexFiles() is not a valid directory! --- " + path.toString());
             }
+
             rm.ui.newMessage(path.toString() + " is not a valid directory path!");
             rm.ui.newMessage("Exiting out of the current action...");
             rm.ui.newMessage(rm.lineSeparator);
@@ -41,6 +70,19 @@ public class Indexer {
         } else {
             // Iterates through the Files in the File[] result array
             for (int i = 0; i < result.length; i++) {
+
+                // Used to allow the user to pause/resume mid function
+                synchronized (ui.executingThread) {
+                    if (rm.actionStatus == ResearchKnowledgeManager.activeState.PAUSED) {
+                        try {
+                            ui.executingThread.wait();
+                        } catch (InterruptedException ex) {
+                            System.err.println("Interrupt exception encountered!!!");
+                        }
+                    }
+                }
+                rm.ui.ProgressBar.setValue(rm.ui.ProgressBar.getValue() + 1);
+
                 // Outputs an error if path is not a folder
                 if (!result[i].isDirectory()) {
                     if (this.debug && print) {
@@ -64,17 +106,41 @@ public class Indexer {
         String validResults = "";
         File[] potentialNew = path.listFiles();
 
-        //Loop to detect newly modified files and add them into the file vector
-        for (int i = 0; i < potentialNew.length; i++) {
-            if (!potentialNew[i].isDirectory() && potentialNew[i].lastModified() > this.lastOpened) {
-                validResults += potentialNew[i].toString() + this.indexParseDelimeter;
+        if (potentialNew == null) {
+            if (this.debug) {
+                System.err.println("Input \"path\" parameter for indexFiles() is not a valid directory! --- " + path.toString());
+            }
 
-                rm.ui.newMessage("New file detected! ->" + potentialNew[i].toString());
+            rm.ui.newMessage(path.toString() + " is not a valid directory path!");
+            rm.ui.newMessage("Exiting out of the current action...");
+            rm.ui.newMessage(rm.lineSeparator);
 
-                // Files can be preemptively put into tags based on their file names here
-                // We can also search the content of files here if needed
-            } else if (potentialNew[i].isDirectory()) {
-                validResults += this.indexFilesNew(potentialNew[i], print, rm) + indexParseDelimeter;
+        } else {//Loop to detect newly modified files and add them into the file vector
+            for (int i = 0; i < potentialNew.length; i++) {
+
+                // Used to allow the user to pause/resume mid function
+                synchronized (ui.executingThread) {
+                    if (rm.actionStatus == ResearchKnowledgeManager.activeState.PAUSED) {
+                        try {
+                            ui.executingThread.wait();
+                        } catch (InterruptedException ex) {
+                            System.err.println("Interrupt exception encountered!!!");
+                        }
+                    }
+                }
+
+                rm.ui.ProgressBar.setValue(rm.ui.ProgressBar.getValue() + 1);
+
+                if (!potentialNew[i].isDirectory() && potentialNew[i].lastModified() > this.lastOpened) {
+                    validResults += potentialNew[i].toString() + this.indexParseDelimeter;
+
+                    rm.ui.newMessage("New file detected! ->" + potentialNew[i].toString());
+
+                    // Files can be preemptively put into tags based on their file names here
+                    // We can also search the content of files here if needed
+                } else if (potentialNew[i].isDirectory()) {
+                    validResults += this.indexFilesNew(potentialNew[i], print, rm) + indexParseDelimeter;
+                }
             }
         }
         rm.updateLastModified();

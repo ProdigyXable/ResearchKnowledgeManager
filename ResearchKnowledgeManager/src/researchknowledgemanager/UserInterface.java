@@ -5,11 +5,8 @@
  */
 package researchknowledgemanager;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
-import javax.swing.AbstractAction;
 import javax.swing.DefaultListModel;
 import javax.swing.SwingUtilities;
 
@@ -19,57 +16,56 @@ import javax.swing.SwingUtilities;
  */
 public class UserInterface extends javax.swing.JFrame {
 
+    boolean exitNoWrite = false;
+
     ResearchKnowledgeManager rm;
     DefaultListModel statusMessages = new DefaultListModel();
-
-    class MenuAction extends AbstractAction {
-
-        public void actionPerformed(ActionEvent e) {
-            String buffer = e.getActionCommand();
-            switch (buffer) {
-                case "IndexAll": {
-                    // Do actions from the RKM class here....
-                    newMessage("Indexing all files in the repository folder. Please wait for confirmation message...");
-                    rm.fileIndexer.indexAllReturn = rm.fileIndexer.indexFilesAll(rm.repositoryFolder, false, rm);
-                    rm.fileIndexer.saveIndexAll(rm.dataDirectory);
-                    newMessage("Finished processing all files");
-                    break;
-                }
-
-                case "IndexNew": {
-                    newMessage("Indexing the newest files");
-                    rm.fileIndexer.indexNewReturn = rm.fileIndexer.indexFilesNew(rm.repositoryFolder, false, rm);
-                    rm.fileIndexer.saveIndexNew(rm.dataDirectory);
-                    newMessage("Finished processing new files");
-                    break;
-                }
-
-                case "Exit": {
-                    rm.ui.dispatchEvent(new WindowEvent(rm.ui, WindowEvent.WINDOW_CLOSING));
-                    break;
-                }
-
-                case "askForFolder": {
-                    try {
-                        rm.askForRepository(new File(rm.dataDirectory.getAbsoluteFile() + "\\" + rm.repoFileName));
-                    } catch (IOException ex) {
-                        System.err.println("I/O Error!");
-                    }
-
-                    break;
-                }
-
-            }
-        }
-    }
+    Thread executingThread;
 
     /**
      * Creates new form UserInterface
      */
     public UserInterface(ResearchKnowledgeManager rm) {
         this.rm = rm;
-        // repoFolder = file;
         initComponents();
+        handleState();
+    }
+
+    void handleState() {
+        switch (rm.actionStatus) {
+            case READY: {
+                startButton.setEnabled(true);
+                cancelButton.setEnabled(true);
+                resumeButton.setEnabled(false);
+                pauseButton.setEnabled(false);
+                break;
+            }
+
+            case INACTIVE: {
+                startButton.setEnabled(false);
+                cancelButton.setEnabled(false);
+                resumeButton.setEnabled(false);
+                pauseButton.setEnabled(false);
+                break;
+            }
+
+            case ACTIVE: {
+                startButton.setEnabled(false);
+                cancelButton.setEnabled(true);
+                resumeButton.setEnabled(false);
+                pauseButton.setEnabled(true);
+                break;
+            }
+
+            case PAUSED: {
+                startButton.setEnabled(false);
+                cancelButton.setEnabled(true);
+                resumeButton.setEnabled(true);
+                pauseButton.setEnabled(false);
+                break;
+            }
+
+        }
     }
 
     void updateTagTree() {
@@ -86,6 +82,7 @@ public class UserInterface extends javax.swing.JFrame {
 
     private void addMessage(String message) {
         statusMessages.addElement(" " + message);
+
     }
 
     public void newMessage(String message) {
@@ -94,6 +91,7 @@ public class UserInterface extends javax.swing.JFrame {
             addMessage(message);
         });
 
+        // Scrolls to the bottom of the Jlist
         SwingUtilities.invokeLater(() -> {
             statusMessagesBottom();
         });
@@ -108,6 +106,7 @@ public class UserInterface extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jMenuItem1 = new javax.swing.JMenuItem();
         statusMessageScrollPane = new javax.swing.JScrollPane();
         statusList = new javax.swing.JList();
         TabbedPane = new javax.swing.JTabbedPane();
@@ -118,13 +117,14 @@ public class UserInterface extends javax.swing.JFrame {
         jScrollPane4 = new javax.swing.JScrollPane();
         FileTree = new javax.swing.JTree();
         UserActionPanel = new javax.swing.JPanel();
-        jButton4 = new javax.swing.JButton();
+        startButton = new javax.swing.JButton();
         resumeButton = new javax.swing.JButton();
         pauseButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
         SubmitButton = new javax.swing.JButton();
         QuitButton = new javax.swing.JButton();
         MainPanel = new javax.swing.JPanel();
+        ProgressBar = new javax.swing.JProgressBar();
         MenuBar = new javax.swing.JMenuBar();
         SystemMenu = new javax.swing.JMenu();
         changeRepositoryFolderMenuItem = new javax.swing.JMenuItem();
@@ -148,6 +148,8 @@ public class UserInterface extends javax.swing.JFrame {
         jSeparator6 = new javax.swing.JPopupMenu.Separator();
         addSpecificFilesToSystemMenuItem = new javax.swing.JMenuItem();
 
+        jMenuItem1.setText("jMenuItem1");
+
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Research Knowledge Manager - SE Senior Design UTD Fall 2015");
         setBackground(new java.awt.Color(153, 153, 153));
@@ -156,6 +158,13 @@ public class UserInterface extends javax.swing.JFrame {
         setMinimumSize(new java.awt.Dimension(1280, 700));
         setPreferredSize(new java.awt.Dimension(1280, 700));
         setResizable(false);
+        addWindowFocusListener(new java.awt.event.WindowFocusListener() {
+            public void windowGainedFocus(java.awt.event.WindowEvent evt) {
+                formWindowGainedFocus(evt);
+            }
+            public void windowLostFocus(java.awt.event.WindowEvent evt) {
+            }
+        });
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosing(java.awt.event.WindowEvent evt) {
                 formWindowClosing(evt);
@@ -173,6 +182,11 @@ public class UserInterface extends javax.swing.JFrame {
         statusList.setName("statusList"); // NOI18N
         statusList.setValueIsAdjusting(true);
         statusList.setVisibleRowCount(1);
+        statusList.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                statusListKeyPressed(evt);
+            }
+        });
         statusMessageScrollPane.setViewportView(statusList);
         statusList.getAccessibleContext().setAccessibleName("statusList");
 
@@ -184,6 +198,11 @@ public class UserInterface extends javax.swing.JFrame {
 
         TagTree.setModel(new TagModelTree(this.rm.Tags));
         TagTree.setLargeModel(true);
+        TagTree.addTreeSelectionListener(new javax.swing.event.TreeSelectionListener() {
+            public void valueChanged(javax.swing.event.TreeSelectionEvent evt) {
+                TagTreeValueChanged(evt);
+            }
+        });
         jScrollPane3.setViewportView(TagTree);
 
         TabbedPane.addTab("List Of Tags", jScrollPane3);
@@ -194,20 +213,19 @@ public class UserInterface extends javax.swing.JFrame {
         TabbedPane.addTab("List of Files", jScrollPane4);
 
         UserActionPanel.setBackground(new java.awt.Color(204, 204, 204));
-        UserActionPanel.setBorder(javax.swing.BorderFactory.createCompoundBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED), new javax.swing.border.LineBorder(new java.awt.Color(153, 153, 153), 1, true)));
         UserActionPanel.setLayout(new java.awt.GridLayout(1, 0));
 
-        jButton4.setFont(new java.awt.Font("Verdana", 1, 10)); // NOI18N
-        jButton4.setText("Start Action");
-        jButton4.setAlignmentX(0.5F);
-        jButton4.setMargin(new java.awt.Insets(2, 6, 2, 6));
-        jButton4.addActionListener(new java.awt.event.ActionListener() {
+        startButton.setFont(new java.awt.Font("Verdana", 1, 10)); // NOI18N
+        startButton.setText("Start Action");
+        startButton.setAlignmentX(0.5F);
+        startButton.setMargin(new java.awt.Insets(2, 6, 2, 6));
+        startButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton4ActionPerformed(evt);
+                startButtonActionPerformed(evt);
             }
         });
-        UserActionPanel.add(jButton4);
-        jButton4.getAccessibleContext().setAccessibleDescription("");
+        UserActionPanel.add(startButton);
+        startButton.getAccessibleContext().setAccessibleDescription("");
 
         resumeButton.setFont(new java.awt.Font("Verdana", 1, 10)); // NOI18N
         resumeButton.setText("Resume Action");
@@ -237,11 +255,16 @@ public class UserInterface extends javax.swing.JFrame {
         cancelButton.setText("Cancel Action");
         cancelButton.setAlignmentX(0.5F);
         cancelButton.setMargin(new java.awt.Insets(2, 6, 2, 6));
+        cancelButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cancelButtonActionPerformed(evt);
+            }
+        });
         UserActionPanel.add(cancelButton);
         cancelButton.getAccessibleContext().setAccessibleDescription("");
 
         SubmitButton.setFont(new java.awt.Font("Verdana", 1, 10)); // NOI18N
-        SubmitButton.setText("Ok / Submit");
+        SubmitButton.setText("Action Button 1");
         SubmitButton.setAlignmentX(0.5F);
         SubmitButton.setEnabled(false);
         SubmitButton.setMargin(new java.awt.Insets(2, 6, 2, 6));
@@ -249,7 +272,7 @@ public class UserInterface extends javax.swing.JFrame {
         SubmitButton.getAccessibleContext().setAccessibleDescription("");
 
         QuitButton.setFont(new java.awt.Font("Verdana", 1, 10)); // NOI18N
-        QuitButton.setText("Quit");
+        QuitButton.setText("Action Button 2");
         QuitButton.setAlignmentX(0.5F);
         QuitButton.setEnabled(false);
         QuitButton.setMargin(new java.awt.Insets(2, 6, 2, 6));
@@ -267,8 +290,17 @@ public class UserInterface extends javax.swing.JFrame {
         );
         MainPanelLayout.setVerticalGroup(
             MainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 413, Short.MAX_VALUE)
+            .addGap(0, 416, Short.MAX_VALUE)
         );
+
+        ProgressBar.setMaximum(0);
+        ProgressBar.setString("");
+        ProgressBar.setStringPainted(true);
+        ProgressBar.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                ProgressBarStateChanged(evt);
+            }
+        });
 
         SystemMenu.setText("System");
         SystemMenu.addMenuListener(new javax.swing.event.MenuListener() {
@@ -281,7 +313,6 @@ public class UserInterface extends javax.swing.JFrame {
             }
         });
 
-        changeRepositoryFolderMenuItem.setAction(new MenuAction());
         changeRepositoryFolderMenuItem.setText("Change Repository Folder");
         changeRepositoryFolderMenuItem.setActionCommand("askForFolder");
         changeRepositoryFolderMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -303,9 +334,10 @@ public class UserInterface extends javax.swing.JFrame {
             }
         });
         SystemMenu.add(cleanDataFilesMenuItem);
+        ProgressBar.setString("0%");
+
         SystemMenu.add(jSeparator5);
 
-        safelyExitSystem.setAction(new MenuAction());
         safelyExitSystem.setText("Safely Exit System");
         safelyExitSystem.setActionCommand("Exit");
         safelyExitSystem.addActionListener(new java.awt.event.ActionListener() {
@@ -341,7 +373,6 @@ public class UserInterface extends javax.swing.JFrame {
 
         SearchesMenu.setText("Searches");
 
-        initiateSearchQueryMenuItem.setAction(new MenuAction());
         initiateSearchQueryMenuItem.setText("Initiate Search Query");
         initiateSearchQueryMenuItem.setActionCommand("initiateSearchQuery");
         SearchesMenu.add(initiateSearchQueryMenuItem);
@@ -350,14 +381,22 @@ public class UserInterface extends javax.swing.JFrame {
 
         IndexingMenu.setText("Indexing");
 
-        indexAllFilesMenuItem.setAction(new MenuAction());
         indexAllFilesMenuItem.setText("Index All Files");
         indexAllFilesMenuItem.setActionCommand("IndexAll");
+        indexAllFilesMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                indexAllFilesMenuItemActionPerformed(evt);
+            }
+        });
         IndexingMenu.add(indexAllFilesMenuItem);
 
-        indexNewFilesMenuItem.setAction(new MenuAction());
         indexNewFilesMenuItem.setText("Index New Files");
         indexNewFilesMenuItem.setActionCommand("IndexNew");
+        indexNewFilesMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                indexNewFilesMenuItemActionPerformed(evt);
+            }
+        });
         IndexingMenu.add(indexNewFilesMenuItem);
         IndexingMenu.add(jSeparator6);
 
@@ -375,12 +414,14 @@ public class UserInterface extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(MainPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(statusMessageScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 595, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(UserActionPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 649, Short.MAX_VALUE))
-                    .addComponent(TabbedPane)
-                    .addComponent(MainPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(UserActionPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 649, Short.MAX_VALUE)
+                            .addComponent(ProgressBar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .addComponent(TabbedPane, javax.swing.GroupLayout.PREFERRED_SIZE, 1256, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -390,11 +431,16 @@ public class UserInterface extends javax.swing.JFrame {
                 .addComponent(TabbedPane, javax.swing.GroupLayout.PREFERRED_SIZE, 125, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(MainPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
-                    .addComponent(UserActionPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 39, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(statusMessageScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(6, 6, 6))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(2, 2, 2)
+                        .addComponent(statusMessageScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(UserActionPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(ProgressBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(7, 7, 7))
         );
 
         getAccessibleContext().setAccessibleName("Research Knowledge Manager - SE Senior Design");
@@ -407,7 +453,11 @@ public class UserInterface extends javax.swing.JFrame {
     }//GEN-LAST:event_SystemMenuMenuCanceled
 
     private void changeRepositoryFolderMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_changeRepositoryFolderMenuItemActionPerformed
-        // TODO add your handling code here:
+        try {
+            rm.askForRepository(new File(rm.dataDirectory.getAbsoluteFile() + "\\" + rm.repoFileName));
+        } catch (IOException ex) {
+            System.err.println("I/O Error!");
+        }
     }//GEN-LAST:event_changeRepositoryFolderMenuItemActionPerformed
 
     private void manuallyTagFilesMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manuallyTagFilesMenuItemActionPerformed
@@ -415,36 +465,187 @@ public class UserInterface extends javax.swing.JFrame {
     }//GEN-LAST:event_manuallyTagFilesMenuItemActionPerformed
 
     private void pauseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pauseButtonActionPerformed
-        // TODO add your handling code here:
+        if (executingThread != null) {
+
+            synchronized (executingThread) {
+                if (rm.actionStatus == ResearchKnowledgeManager.activeState.ACTIVE) {
+                    rm.setState(ResearchKnowledgeManager.activeState.PAUSED);
+                    newMessage("Pausing current action. Click \"Resume Action\" to resume the action");
+                }
+            }
+        }
     }//GEN-LAST:event_pauseButtonActionPerformed
 
     private void cleanDataFilesMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cleanDataFilesMenuItemActionPerformed
         // TODO add your handling code here:
+        exitNoWrite = true;
+
         ConfirmationDialog confirm = new ConfirmationDialog(this, true);
         confirm.setVisible(true);
         if (confirm.getReturnStatus() == 1) {
             this.rm.clean();
+            ProgressBar.setMaximum(0);
+
+            // Series of actions disabling menu items to prevent unexpected exceptions from user input
+            this.indexAllFilesMenuItem.setEnabled(false);
+            this.indexNewFilesMenuItem.setEnabled(false);
+            this.addSpecificFilesToSystemMenuItem.setEnabled(false);
+            this.associateFilesWithTagMenuItem.setEnabled(false);
+            this.associateTagsWithFilesMenuItem.setEnabled(false);
+            this.changeRepositoryFolderMenuItem.setEnabled(false);
+            this.automaticallyTagFilesMenuItem.setEnabled(false);
+            this.manuallyTagFilesMenuItem.setEnabled(false);
+            this.initiateSearchQueryMenuItem.setEnabled(false);
         }
 
     }//GEN-LAST:event_cleanDataFilesMenuItemActionPerformed
 
     private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
         // TODO add your handling code here:
-        this.rm.exit();
+        if (!exitNoWrite) {
+            this.rm.exit();
+        }
         System.exit(0);
     }//GEN-LAST:event_formWindowClosing
 
     private void safelyExitSystemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_safelyExitSystemActionPerformed
-        // TODO add your handling code here:
+        this.formWindowClosing(null);
     }//GEN-LAST:event_safelyExitSystemActionPerformed
 
     private void resumeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resumeButtonActionPerformed
-        // TODO add your handling code here:
+
+        if (executingThread != null) {
+            synchronized (executingThread) {
+                if (rm.actionStatus == ResearchKnowledgeManager.activeState.PAUSED) {
+                    executingThread.notifyAll();
+                    rm.setState(ResearchKnowledgeManager.activeState.ACTIVE);
+                    newMessage("Resuming current action...");
+                }
+            }
+        }
     }//GEN-LAST:event_resumeButtonActionPerformed
 
-    private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
+    private void startButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startButtonActionPerformed
+        if (executingThread != null && !executingThread.isAlive()) {
+            executingThread.start();
+        } else {
+            System.err.println("NULL EXCEPTION ERROR OCCURRING");
+        }
+    }//GEN-LAST:event_startButtonActionPerformed
+
+    private void TagTreeValueChanged(javax.swing.event.TreeSelectionEvent evt) {//GEN-FIRST:event_TagTreeValueChanged
         // TODO add your handling code here:
-    }//GEN-LAST:event_jButton4ActionPerformed
+
+    }//GEN-LAST:event_TagTreeValueChanged
+
+    private void ProgressBarStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_ProgressBarStateChanged
+        if (rm.ui.ProgressBar.getMaximum() > 0) {
+            rm.ui.ProgressBar.setString(100 * rm.ui.ProgressBar.getValue() / rm.ui.ProgressBar.getMaximum() + "%");
+        } else {
+            rm.ui.ProgressBar.setString("0%");
+        }
+
+    }//GEN-LAST:event_ProgressBarStateChanged
+
+    private void indexAllFilesMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_indexAllFilesMenuItemActionPerformed
+        rm.setState(ResearchKnowledgeManager.activeState.READY);
+        newMessage("Ready to index all files. Click \"Start Action\" to begin");
+
+        this.executingThread = new Thread(() -> {
+
+            //Thread initializations
+            ProgressBar.setMaximum(0);
+            rm.setState(ResearchKnowledgeManager.activeState.ACTIVE);
+            newMessage("Preparing some calculations, please wait");
+            ProgressBar.setMaximum(rm.fileIndexer.computeMaxFolderChild(rm.repositoryFolder));
+
+            newMessage("Calculations completed! File indexing will now begin. Please wait for confirmation message...");
+            rm.fileIndexer.indexAllReturn = rm.fileIndexer.indexFilesAll(rm.repositoryFolder, false, rm);
+
+            newMessage(rm.lineSeparator);
+            rm.fileIndexer.saveIndexAll(rm.dataDirectory);
+
+            // Thread cleanup
+            newMessage("Finished processing all files!");
+            rm.setState(ResearchKnowledgeManager.activeState.INACTIVE);
+            executingThread = null;
+        });
+
+    }//GEN-LAST:event_indexAllFilesMenuItemActionPerformed
+
+    private void indexNewFilesMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_indexNewFilesMenuItemActionPerformed
+        rm.setState(ResearchKnowledgeManager.activeState.READY);
+        newMessage("Ready to index all files. Click \"Start Action\" to begin");
+
+        executingThread = new Thread(() -> {
+
+            //Thread initializations
+            ProgressBar.setMaximum(0);
+            rm.setState(ResearchKnowledgeManager.activeState.ACTIVE);
+            newMessage("Preparing some calculations, please wait...");
+            ProgressBar.setMaximum(rm.fileIndexer.computeMaxFolderChild(rm.repositoryFolder));
+            newMessage("Calculations completed! File indexing will now begin. Please wait for confirmation message...");
+
+            rm.fileIndexer.indexNewReturn = rm.fileIndexer.indexFilesNew(rm.repositoryFolder, false, rm);
+            newMessage(rm.lineSeparator);
+
+            rm.fileIndexer.saveIndexNew(rm.dataDirectory);
+
+            // Thread cleanup
+            newMessage("Finished processing new files!");
+            rm.setState(ResearchKnowledgeManager.activeState.INACTIVE);
+            executingThread = null;
+        });
+
+    }//GEN-LAST:event_indexNewFilesMenuItemActionPerformed
+
+    private void formWindowGainedFocus(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowGainedFocus
+
+    }//GEN-LAST:event_formWindowGainedFocus
+
+    private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
+
+        newMessage("Current action cancelled!");
+        newMessage(rm.lineSeparator);
+        ProgressBar.setString("0%");
+        ProgressBar.setValue(0);
+        ProgressBar.setMaximum(0);
+
+        switch (rm.actionStatus) {
+            case READY: {
+                // May need to find better alternative to stop() method since the method is deprecated...
+                executingThread.stop();
+                executingThread = null;
+                rm.setState(ResearchKnowledgeManager.activeState.INACTIVE);
+                break;
+            }
+            case ACTIVE: {
+                // May need to find better alternative to stop() method since the method is deprecated...
+                executingThread.stop();
+                executingThread = null;
+                rm.setState(ResearchKnowledgeManager.activeState.INACTIVE);
+                break;
+            }
+            case PAUSED: {
+                // May need to find better alternative to stop() method since the method is deprecated...
+                executingThread.stop();
+                executingThread = null;
+                rm.setState(ResearchKnowledgeManager.activeState.INACTIVE);
+                break;
+            }
+
+        }
+    }//GEN-LAST:event_cancelButtonActionPerformed
+
+    private void statusListKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_statusListKeyPressed
+        if (evt.getKeyCode() == java.awt.event.KeyEvent.VK_DELETE) {
+            statusMessages.removeAllElements();
+            newMessage("Message log cleared!");
+            newMessage(rm.lineSeparator);
+        } else if (evt.getKeyCode() == java.awt.event.KeyEvent.VK_BACK_SPACE && statusMessages.getSize() > 0) {
+            statusMessages.remove(statusMessages.getSize() - 1);
+        }
+    }//GEN-LAST:event_statusListKeyPressed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     protected javax.swing.JTree FileExplorerTree;
@@ -452,6 +653,7 @@ public class UserInterface extends javax.swing.JFrame {
     private javax.swing.JMenu IndexingMenu;
     private javax.swing.JPanel MainPanel;
     private javax.swing.JMenuBar MenuBar;
+    protected javax.swing.JProgressBar ProgressBar;
     private javax.swing.JButton QuitButton;
     private javax.swing.JMenu SearchesMenu;
     private javax.swing.JButton SubmitButton;
@@ -470,7 +672,7 @@ public class UserInterface extends javax.swing.JFrame {
     private javax.swing.JMenuItem indexAllFilesMenuItem;
     private javax.swing.JMenuItem indexNewFilesMenuItem;
     private javax.swing.JMenuItem initiateSearchQueryMenuItem;
-    private javax.swing.JButton jButton4;
+    private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
@@ -484,6 +686,7 @@ public class UserInterface extends javax.swing.JFrame {
     private javax.swing.JButton pauseButton;
     private javax.swing.JButton resumeButton;
     private javax.swing.JMenuItem safelyExitSystem;
+    private javax.swing.JButton startButton;
     private javax.swing.JList statusList;
     private javax.swing.JScrollPane statusMessageScrollPane;
     // End of variables declaration//GEN-END:variables
