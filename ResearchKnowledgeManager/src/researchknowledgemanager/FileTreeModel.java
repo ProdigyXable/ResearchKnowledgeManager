@@ -79,6 +79,7 @@ class FileTreeModelTree implements TreeModel {
     // Since this is not an editable tree model, we never fire any events,
     // so we don't actually have to keep track of interested listeners.
     public void addTreeModelListener(TreeModelListener l) {
+
     }
 
     public void removeTreeModelListener(TreeModelListener l) {

@@ -26,6 +26,10 @@ public class FileModelTree implements TreeModel {
         this.Files = data;
     }
 
+    public boolean isHead(Object node) {
+        return node.equals(treeRootName);
+    }
+
     public Object getRoot() {
 
         return this.treeRootName;

@@ -55,6 +55,7 @@ public class UserRepositoryPrompt extends javax.swing.JDialog {
             }
         });
 
+        UserInput.setFont(new java.awt.Font("Verdana", 0, 12)); // NOI18N
         UserInput.setToolTipText("Filepath of the repository folder. This file path should end in a '\\' such as C:\\My\\Folder\\Path\\");
             UserInput.addActionListener(new java.awt.event.ActionListener() {
                 public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -62,6 +63,7 @@ public class UserRepositoryPrompt extends javax.swing.JDialog {
                 }
             });
 
+            SubmitButton.setFont(new java.awt.Font("Verdana", 1, 12)); // NOI18N
             SubmitButton.setText("Submit");
             SubmitButton.setAlignmentX(0.5F);
             SubmitButton.addActionListener(new java.awt.event.ActionListener() {
@@ -70,6 +72,7 @@ public class UserRepositoryPrompt extends javax.swing.JDialog {
                 }
             });
 
+            CancelButton.setFont(new java.awt.Font("Verdana", 1, 12)); // NOI18N
             CancelButton.setText("Cancel");
             CancelButton.addActionListener(new java.awt.event.ActionListener() {
                 public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -85,6 +88,7 @@ public class UserRepositoryPrompt extends javax.swing.JDialog {
 
             jTextPane1.setEditable(false);
             jTextPane1.setBorder(null);
+            jTextPane1.setFont(new java.awt.Font("Verdana", 0, 12)); // NOI18N
             jTextPane1.setText("The repository folder should be the parent directory which contains all of the files you wish to tag. Specify the repository folder path for the system, then click the \"Submit\" button.\n\nValid Examples:\n- A:\\ \n- B:\\MyFolder\\ \n- C:\\My\\Really\\Extremely\\Long\\Folder\\Path\\Here\\");
                 jTextPane1.setOpaque(false);
                 jScrollPane2.setViewportView(jTextPane1);

@@ -31,16 +31,28 @@ public class Indexer {
         File[] buffer = file.listFiles();
         int returnValue = 0;
 
+        ui.progressBar.setString("Checking " + file);
         if (buffer == null) {
-            System.err.println("File in question is " + file);
-            System.err.println("File can Read = " + file.canRead());
-            System.err.println("File can Execute = " + file.canExecute());
-            System.err.println("File can Write = " + file.canWrite());
-            System.err.println("File is hidden = " + file.isHidden());
-            System.err.println("There was a problem with the folder specified! -> " + file.toString());
+            if (debug) {
+                System.err.println("File in question is " + file);
+                System.err.println("File can Read = " + file.canRead());
+                System.err.println("File can Execute = " + file.canExecute());
+                System.err.println("File can Write = " + file.canWrite());
+                System.err.println("File is hidden = " + file.isHidden());
+                System.err.println("There was a problem with the folder specified! -> " + file.toString());
+            }
             return 0;
         } else {
             for (File data : buffer) {
+                synchronized (ui.executingThread) {
+                    if (this.ui.rm.actionStatus == ResearchKnowledgeManager.activeState.PAUSED) {
+                        try {
+                            ui.executingThread.wait();
+                        } catch (InterruptedException ex) {
+                            System.err.println("Interrupt exception encountered!!!");
+                        }
+                    }
+                }
                 if (!data.isHidden()) {
                     if (data.isDirectory()) {
                         returnValue += computeMaxFolderChild(data);
@@ -49,6 +61,7 @@ public class Indexer {
 
                     }
                 }
+
             }
             return returnValue;
         }
@@ -81,7 +94,7 @@ public class Indexer {
                         }
                     }
                 }
-                rm.ui.ProgressBar.setValue(rm.ui.ProgressBar.getValue() + 1);
+                rm.ui.progressBar.setValue(rm.ui.progressBar.getValue() + 1);
 
                 // Outputs an error if path is not a folder
                 if (!result[i].isDirectory()) {
@@ -129,7 +142,7 @@ public class Indexer {
                     }
                 }
 
-                rm.ui.ProgressBar.setValue(rm.ui.ProgressBar.getValue() + 1);
+                rm.ui.progressBar.setValue(rm.ui.progressBar.getValue() + 1);
 
                 if (!potentialNew[i].isDirectory() && potentialNew[i].lastModified() > this.lastOpened) {
                     validResults += potentialNew[i].toString() + this.indexParseDelimeter;

@@ -82,6 +82,7 @@ public class ConfirmationDialog extends javax.swing.JDialog {
             }
         });
 
+        okButton.setFont(new java.awt.Font("Verdana", 1, 10)); // NOI18N
         okButton.setText("OK");
         okButton.setDefaultCapable(false);
         okButton.setFocusable(false);
@@ -91,6 +92,7 @@ public class ConfirmationDialog extends javax.swing.JDialog {
             }
         });
 
+        cancelButton.setFont(new java.awt.Font("Verdana", 1, 10)); // NOI18N
         cancelButton.setText("Cancel");
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -98,11 +100,13 @@ public class ConfirmationDialog extends javax.swing.JDialog {
             }
         });
 
+        jLabel1.setFont(new java.awt.Font("Verdana", 1, 10)); // NOI18N
         jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel1.setText("Are you sure you wish to clean the data files? This will erase all data for this project!");
+        jLabel1.setText("Are you sure you wish to clean the data files? This will erase all data for this program!");
 
+        jLabel2.setFont(new java.awt.Font("Verdana", 1, 10)); // NOI18N
         jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel2.setText("This should only be done if your data is corrupted!");
+        jLabel2.setText("This should only be done if your data is corrupted! This program will close afterwards");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);

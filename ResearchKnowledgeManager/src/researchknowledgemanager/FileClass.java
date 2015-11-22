@@ -12,18 +12,21 @@ public class FileClass {
 
     String FileName;
     int incrementCount = 20;
+    ResearchKnowledgeManager rm;
 
     //Array of Tag Names
     Vector<String> associatedTags;
 
-    FileClass(String name) {
+    FileClass(String name, ResearchKnowledgeManager rkm) {
         FileName = name.toLowerCase();
         associatedTags = new Vector<>(incrementCount);
+        rm = rkm;
 
     }
 
-    FileClass(File file) {
+    FileClass(File file, ResearchKnowledgeManager rkm) {
         FileName = file.toString().toLowerCase();
+        rm = rkm;
     }
 
     public String toString() {
@@ -54,15 +57,40 @@ public class FileClass {
 
     void addTag(String[] tagList) {
         for (int i = 0; i < tagList.length; i++) {
-            if (!this.associatedTags.contains(tagList[i].toLowerCase())) {
-                this.associatedTags.addElement(tagList[i].toLowerCase());
-            }
+            addTag(tagList[i]);
         }
     }
 
-    void addTag(String tagList) {
-        if (!this.associatedTags.contains(tagList.toLowerCase())) {
-            this.associatedTags.addElement(tagList.toLowerCase());
+    void addTag(String tagItem) {
+        if (!this.associatedTags.contains(tagItem.toLowerCase())) {
+            this.associatedTags.addElement(tagItem.toLowerCase());
+
+            //Search for the specified file and append a tag to it in the file class
+            for (int j = 0; j < rm.Tags.size(); j++) {
+
+                if (rm.Tags.get(j).TagName.equals(tagItem.toLowerCase())) {
+
+                    if (rm.debug) {
+                        System.err.println("Existing tag found within the file structure. File added to this Tag");
+                    }
+
+                    rm.Tags.get(j).addFiles(this.FileName);
+                    return;
+                } else {
+                    System.err.println("Somethingi unknown happened...");
+                }
+
+            }
+
+            rm.addTagClass(new TagClass(tagItem, rm));
+            rm.Tags.get(rm.Tags.size() - 1).addFiles(this.FileName);
+            rm.ui.refreshTagItemList();
+
+        } else {
+            if (rm.debug) {
+                System.err.println("Tag NOT FOUND. Adding Tag now\t" + tagItem);
+            }
+
         }
     }
 }

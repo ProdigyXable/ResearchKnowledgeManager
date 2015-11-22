@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.IOException;
 import javax.swing.DefaultListModel;
 import javax.swing.SwingUtilities;
+import javax.swing.tree.TreeSelectionModel;
 
 /**
  *
@@ -20,6 +21,7 @@ public class UserInterface extends javax.swing.JFrame {
 
     ResearchKnowledgeManager rm;
     DefaultListModel statusMessages = new DefaultListModel();
+    DefaultListModel TagItemListModel = new DefaultListModel();
     Thread executingThread;
 
     /**
@@ -29,6 +31,9 @@ public class UserInterface extends javax.swing.JFrame {
         this.rm = rm;
         initComponents();
         handleState();
+
+        this.customActionPane.removeAll();
+        this.validate();
     }
 
     void handleState() {
@@ -70,10 +75,12 @@ public class UserInterface extends javax.swing.JFrame {
 
     void updateTagTree() {
         this.TagTree.setModel(new TagModelTree(this.rm.Tags));
+        this.TagTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
     }
 
     void updateFileTree() {
         this.FileTree.setModel(new FileModelTree(this.rm.Files));
+        this.FileTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
     }
 
     void statusMessagesBottom() {
@@ -82,6 +89,11 @@ public class UserInterface extends javax.swing.JFrame {
 
     private void addMessage(String message) {
         statusMessages.addElement(" " + message);
+
+    }
+
+    private void TagItemMessage(String message) {
+        TagItemListModel.addElement(message);
 
     }
 
@@ -97,6 +109,22 @@ public class UserInterface extends javax.swing.JFrame {
         });
     }
 
+    public void newTagItem(String message) {
+        SwingUtilities.invokeLater(() -> {
+            TagItemMessage(message);
+        });
+    }
+
+    public void refreshTagItemList() {
+        this.TagItemListModel.removeAllElements();
+
+        // List should already be ensured to no have duplicates
+        for (int i = 0; i < rm.Tags.size(); i++) {
+            this.newTagItem(this.rm.Tags.get(i).toString());
+        }
+
+    }
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -106,25 +134,34 @@ public class UserInterface extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jMenuItem1 = new javax.swing.JMenuItem();
+        modifyKeywordsButton = new javax.swing.JButton();
+        removeTagFromFileButton = new javax.swing.JButton();
+        removeFileFromTagButton = new javax.swing.JButton();
+        addTagToFileButton = new javax.swing.JButton();
+        addFileToSystemButton = new javax.swing.JButton();
+        addFileToTagButton = new javax.swing.JButton();
+        newTagButton = new javax.swing.JButton();
+        TabbedPane = new javax.swing.JTabbedPane();
+        FileExplorerTreePane = new javax.swing.JScrollPane();
+        FileExplorerTree = new javax.swing.JTree();
+        TagTreePane = new javax.swing.JScrollPane();
+        TagTree = new javax.swing.JTree();
+        FileTreePane = new javax.swing.JScrollPane();
+        FileTree = new javax.swing.JTree();
         statusMessageScrollPane = new javax.swing.JScrollPane();
         statusList = new javax.swing.JList();
-        TabbedPane = new javax.swing.JTabbedPane();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        FileExplorerTree = new javax.swing.JTree();
-        jScrollPane3 = new javax.swing.JScrollPane();
-        TagTree = new javax.swing.JTree();
-        jScrollPane4 = new javax.swing.JScrollPane();
-        FileTree = new javax.swing.JTree();
-        UserActionPanel = new javax.swing.JPanel();
+        PrimaryActionPanel = new javax.swing.JPanel();
         startButton = new javax.swing.JButton();
         resumeButton = new javax.swing.JButton();
         pauseButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
-        SubmitButton = new javax.swing.JButton();
-        QuitButton = new javax.swing.JButton();
-        MainPanel = new javax.swing.JPanel();
-        ProgressBar = new javax.swing.JProgressBar();
+        mainPanel = new javax.swing.JPanel();
+        customActionPane = new javax.swing.JPanel();
+        TagListItemScrollPane = new javax.swing.JScrollPane();
+        TagItemSearchList = new javax.swing.JList();
+        SearchKeywordScrollPane = new javax.swing.JScrollPane();
+        jTextArea1 = new javax.swing.JTextArea();
+        progressBar = new javax.swing.JProgressBar();
         MenuBar = new javax.swing.JMenuBar();
         SystemMenu = new javax.swing.JMenu();
         changeRepositoryFolderMenuItem = new javax.swing.JMenuItem();
@@ -136,19 +173,53 @@ public class UserInterface extends javax.swing.JFrame {
         safelyExitSystem = new javax.swing.JMenuItem();
         TagsMenu = new javax.swing.JMenu();
         automaticallyTagFilesMenuItem = new javax.swing.JMenuItem();
-        manuallyTagFilesMenuItem = new javax.swing.JMenuItem();
-        jSeparator4 = new javax.swing.JPopupMenu.Separator();
-        associateFilesWithTagMenuItem = new javax.swing.JMenuItem();
-        associateTagsWithFilesMenuItem = new javax.swing.JMenuItem();
         SearchesMenu = new javax.swing.JMenu();
         initiateSearchQueryMenuItem = new javax.swing.JMenuItem();
         IndexingMenu = new javax.swing.JMenu();
         indexAllFilesMenuItem = new javax.swing.JMenuItem();
         indexNewFilesMenuItem = new javax.swing.JMenuItem();
-        jSeparator6 = new javax.swing.JPopupMenu.Separator();
-        addSpecificFilesToSystemMenuItem = new javax.swing.JMenuItem();
 
-        jMenuItem1.setText("jMenuItem1");
+        modifyKeywordsButton.setFont(new java.awt.Font("Verdana", 1, 10)); // NOI18N
+        modifyKeywordsButton.setText("Modify Tag Keywords");
+
+        removeTagFromFileButton.setFont(new java.awt.Font("Verdana", 1, 10)); // NOI18N
+        removeTagFromFileButton.setText("Remove Tag(s) from File");
+
+        removeFileFromTagButton.setFont(new java.awt.Font("Verdana", 1, 10)); // NOI18N
+        removeFileFromTagButton.setText("Remove File(s) from Tag");
+        removeFileFromTagButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                removeFileFromTagButtonActionPerformed(evt);
+            }
+        });
+
+        addTagToFileButton.setFont(new java.awt.Font("Verdana", 1, 10)); // NOI18N
+        addTagToFileButton.setText("Add Tag(s) to File");
+        addTagToFileButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addTagToFileButtonActionPerformed(evt);
+            }
+        });
+
+        addFileToSystemButton.setFont(new java.awt.Font("Verdana", 1, 10)); // NOI18N
+        addFileToSystemButton.setText("Add File(s) to System");
+
+        addFileToTagButton.setFont(new java.awt.Font("Verdana", 1, 10)); // NOI18N
+        addFileToTagButton.setText("Add File(s) to Tag");
+        addFileToTagButton.setAlignmentX(0.5F);
+        addFileToTagButton.setMargin(new java.awt.Insets(2, 6, 2, 6));
+        addFileToTagButton.getAccessibleContext().setAccessibleDescription("");
+
+        newTagButton.setFont(new java.awt.Font("Verdana", 1, 10)); // NOI18N
+        newTagButton.setText("Create New Tag");
+        newTagButton.setAlignmentX(0.5F);
+        newTagButton.setMargin(new java.awt.Insets(2, 6, 2, 6));
+        newTagButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                newTagButtonActionPerformed(evt);
+            }
+        });
+        newTagButton.getAccessibleContext().setAccessibleDescription("");
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Research Knowledge Manager - SE Senior Design UTD Fall 2015");
@@ -171,11 +242,54 @@ public class UserInterface extends javax.swing.JFrame {
             }
         });
 
+        TabbedPane.setFont(new java.awt.Font("Verdana", 1, 12)); // NOI18N
+        TabbedPane.setInheritsPopupMenu(true);
+        TabbedPane.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                TabbedPaneStateChanged(evt);
+            }
+        });
+
+        FileExplorerTree.setFont(new java.awt.Font("Verdana", 0, 10)); // NOI18N
+        FileExplorerTree.setModel(new FileTreeModelTree(this.rm.repositoryFolder));
+        FileExplorerTree.setVisibleRowCount(40);
+        FileExplorerTree.addTreeSelectionListener(new javax.swing.event.TreeSelectionListener() {
+            public void valueChanged(javax.swing.event.TreeSelectionEvent evt) {
+                FileExplorerTreeValueChanged(evt);
+            }
+        });
+        FileExplorerTreePane.setViewportView(FileExplorerTree);
+
+        TabbedPane.addTab("File Explorer Hierarchy", FileExplorerTreePane);
+
+        TagTree.setFont(new java.awt.Font("Verdana", 0, 10)); // NOI18N
+        TagTree.setModel(new TagModelTree(this.rm.Tags));
+        TagTree.setLargeModel(true);
+        TagTree.addTreeSelectionListener(new javax.swing.event.TreeSelectionListener() {
+            public void valueChanged(javax.swing.event.TreeSelectionEvent evt) {
+                TagTreeValueChanged(evt);
+            }
+        });
+        TagTreePane.setViewportView(TagTree);
+
+        TabbedPane.addTab("Tag Hierarchy", TagTreePane);
+
+        FileTree.setFont(new java.awt.Font("Verdana", 0, 10)); // NOI18N
+        FileTree.setModel(new FileModelTree(this.rm.Files));
+        FileTree.addTreeSelectionListener(new javax.swing.event.TreeSelectionListener() {
+            public void valueChanged(javax.swing.event.TreeSelectionEvent evt) {
+                FileTreeValueChanged(evt);
+            }
+        });
+        FileTreePane.setViewportView(FileTree);
+
+        TabbedPane.addTab("File Hierarchy", FileTreePane);
+
         statusMessageScrollPane.setBackground(new java.awt.Color(204, 204, 204));
         statusMessageScrollPane.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         statusMessageScrollPane.setAutoscrolls(true);
 
-        statusList.setFont(new java.awt.Font("Verdana", 0, 10)); // NOI18N
+        statusList.setFont(new java.awt.Font("Verdana", 2, 10)); // NOI18N
         statusList.setModel(this.statusMessages);
         statusList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         statusList.setDropMode(javax.swing.DropMode.ON);
@@ -190,30 +304,8 @@ public class UserInterface extends javax.swing.JFrame {
         statusMessageScrollPane.setViewportView(statusList);
         statusList.getAccessibleContext().setAccessibleName("statusList");
 
-        FileExplorerTree.setFont(new java.awt.Font("Verdana", 0, 10)); // NOI18N
-        FileExplorerTree.setModel(new FileTreeModelTree(this.rm.repositoryFolder));
-        jScrollPane1.setViewportView(FileExplorerTree);
-
-        TabbedPane.addTab("File Explorer Hierarchy", jScrollPane1);
-
-        TagTree.setModel(new TagModelTree(this.rm.Tags));
-        TagTree.setLargeModel(true);
-        TagTree.addTreeSelectionListener(new javax.swing.event.TreeSelectionListener() {
-            public void valueChanged(javax.swing.event.TreeSelectionEvent evt) {
-                TagTreeValueChanged(evt);
-            }
-        });
-        jScrollPane3.setViewportView(TagTree);
-
-        TabbedPane.addTab("List Of Tags", jScrollPane3);
-
-        FileTree.setModel(new FileModelTree(this.rm.Files));
-        jScrollPane4.setViewportView(FileTree);
-
-        TabbedPane.addTab("List of Files", jScrollPane4);
-
-        UserActionPanel.setBackground(new java.awt.Color(204, 204, 204));
-        UserActionPanel.setLayout(new java.awt.GridLayout(1, 0));
+        PrimaryActionPanel.setBackground(new java.awt.Color(204, 204, 204));
+        PrimaryActionPanel.setLayout(new java.awt.GridLayout(1, 0, 2, 0));
 
         startButton.setFont(new java.awt.Font("Verdana", 1, 10)); // NOI18N
         startButton.setText("Start Action");
@@ -224,7 +316,7 @@ public class UserInterface extends javax.swing.JFrame {
                 startButtonActionPerformed(evt);
             }
         });
-        UserActionPanel.add(startButton);
+        PrimaryActionPanel.add(startButton);
         startButton.getAccessibleContext().setAccessibleDescription("");
 
         resumeButton.setFont(new java.awt.Font("Verdana", 1, 10)); // NOI18N
@@ -236,7 +328,7 @@ public class UserInterface extends javax.swing.JFrame {
                 resumeButtonActionPerformed(evt);
             }
         });
-        UserActionPanel.add(resumeButton);
+        PrimaryActionPanel.add(resumeButton);
         resumeButton.getAccessibleContext().setAccessibleDescription("");
 
         pauseButton.setFont(new java.awt.Font("Verdana", 1, 10)); // NOI18N
@@ -248,7 +340,7 @@ public class UserInterface extends javax.swing.JFrame {
                 pauseButtonActionPerformed(evt);
             }
         });
-        UserActionPanel.add(pauseButton);
+        PrimaryActionPanel.add(pauseButton);
         pauseButton.getAccessibleContext().setAccessibleDescription("");
 
         cancelButton.setFont(new java.awt.Font("Verdana", 1, 10)); // NOI18N
@@ -260,49 +352,73 @@ public class UserInterface extends javax.swing.JFrame {
                 cancelButtonActionPerformed(evt);
             }
         });
-        UserActionPanel.add(cancelButton);
+        PrimaryActionPanel.add(cancelButton);
         cancelButton.getAccessibleContext().setAccessibleDescription("");
 
-        SubmitButton.setFont(new java.awt.Font("Verdana", 1, 10)); // NOI18N
-        SubmitButton.setText("Action Button 1");
-        SubmitButton.setAlignmentX(0.5F);
-        SubmitButton.setEnabled(false);
-        SubmitButton.setMargin(new java.awt.Insets(2, 6, 2, 6));
-        UserActionPanel.add(SubmitButton);
-        SubmitButton.getAccessibleContext().setAccessibleDescription("");
+        mainPanel.setBackground(new java.awt.Color(229, 229, 229));
+        mainPanel.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0), 1, true)));
+        mainPanel.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                mainPanelMouseEntered(evt);
+            }
+        });
 
-        QuitButton.setFont(new java.awt.Font("Verdana", 1, 10)); // NOI18N
-        QuitButton.setText("Action Button 2");
-        QuitButton.setAlignmentX(0.5F);
-        QuitButton.setEnabled(false);
-        QuitButton.setMargin(new java.awt.Insets(2, 6, 2, 6));
-        UserActionPanel.add(QuitButton);
-        QuitButton.getAccessibleContext().setAccessibleDescription("");
+        customActionPane.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        customActionPane.setMinimumSize(new java.awt.Dimension(817, 28));
+        customActionPane.setLayout(new java.awt.GridLayout(0, 3, 2, 2));
 
-        MainPanel.setBackground(new java.awt.Color(229, 229, 229));
-        MainPanel.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0), 1, true)));
+        TagListItemScrollPane.setViewportBorder(javax.swing.BorderFactory.createTitledBorder(null, "Tag List Item", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Verdana", 0, 12))); // NOI18N
 
-        javax.swing.GroupLayout MainPanelLayout = new javax.swing.GroupLayout(MainPanel);
-        MainPanel.setLayout(MainPanelLayout);
-        MainPanelLayout.setHorizontalGroup(
-            MainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
+        TagItemSearchList.setFont(new java.awt.Font("Verdana", 0, 12)); // NOI18N
+        TagItemSearchList.setModel(this.TagItemListModel);
+        TagListItemScrollPane.setViewportView(TagItemSearchList);
+
+        SearchKeywordScrollPane.setViewportBorder(javax.swing.BorderFactory.createTitledBorder(null, "Search Keywords", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Verdana", 0, 12))); // NOI18N
+
+        jTextArea1.setColumns(20);
+        jTextArea1.setRows(5);
+        SearchKeywordScrollPane.setViewportView(jTextArea1);
+
+        javax.swing.GroupLayout mainPanelLayout = new javax.swing.GroupLayout(mainPanel);
+        mainPanel.setLayout(mainPanelLayout);
+        mainPanelLayout.setHorizontalGroup(
+            mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(customActionPane, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 643, Short.MAX_VALUE)
+            .addGroup(mainPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(TagListItemScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(SearchKeywordScrollPane)
+                .addContainerGap())
         );
-        MainPanelLayout.setVerticalGroup(
-            MainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 416, Short.MAX_VALUE)
+        mainPanelLayout.setVerticalGroup(
+            mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, mainPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(TagListItemScrollPane)
+                    .addGroup(mainPanelLayout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(SearchKeywordScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(customActionPane, javax.swing.GroupLayout.PREFERRED_SIZE, 48, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
-        ProgressBar.setMaximum(0);
-        ProgressBar.setString("");
-        ProgressBar.setStringPainted(true);
-        ProgressBar.addChangeListener(new javax.swing.event.ChangeListener() {
+        progressBar.setFont(new java.awt.Font("Verdana", 3, 14)); // NOI18N
+        progressBar.setMaximum(0);
+        progressBar.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+        progressBar.setName(""); // NOI18N
+        progressBar.setOpaque(false);
+        progressBar.setString("");
+        progressBar.setStringPainted(true);
+        progressBar.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                ProgressBarStateChanged(evt);
+                progressBarStateChanged(evt);
             }
         });
 
         SystemMenu.setText("System");
+        SystemMenu.setFont(new java.awt.Font("Verdana", 1, 12)); // NOI18N
         SystemMenu.addMenuListener(new javax.swing.event.MenuListener() {
             public void menuCanceled(javax.swing.event.MenuEvent evt) {
                 SystemMenuMenuCanceled(evt);
@@ -313,6 +429,7 @@ public class UserInterface extends javax.swing.JFrame {
             }
         });
 
+        changeRepositoryFolderMenuItem.setFont(new java.awt.Font("Verdana", 0, 10)); // NOI18N
         changeRepositoryFolderMenuItem.setText("Change Repository Folder");
         changeRepositoryFolderMenuItem.setActionCommand("askForFolder");
         changeRepositoryFolderMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -323,10 +440,12 @@ public class UserInterface extends javax.swing.JFrame {
         SystemMenu.add(changeRepositoryFolderMenuItem);
         SystemMenu.add(jSeparator1);
 
+        openHelpDocumentMenuIte0.setFont(new java.awt.Font("Verdana", 0, 10)); // NOI18N
         openHelpDocumentMenuIte0.setText("Open Help Document");
         SystemMenu.add(openHelpDocumentMenuIte0);
         SystemMenu.add(jSeparator2);
 
+        cleanDataFilesMenuItem.setFont(new java.awt.Font("Verdana", 0, 10)); // NOI18N
         cleanDataFilesMenuItem.setText("Clean Data Files");
         cleanDataFilesMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -334,10 +453,11 @@ public class UserInterface extends javax.swing.JFrame {
             }
         });
         SystemMenu.add(cleanDataFilesMenuItem);
-        ProgressBar.setString("0%");
+        progressBar.setString("0%");
 
         SystemMenu.add(jSeparator5);
 
+        safelyExitSystem.setFont(new java.awt.Font("Verdana", 0, 10)); // NOI18N
         safelyExitSystem.setText("Safely Exit System");
         safelyExitSystem.setActionCommand("Exit");
         safelyExitSystem.addActionListener(new java.awt.event.ActionListener() {
@@ -350,29 +470,18 @@ public class UserInterface extends javax.swing.JFrame {
         MenuBar.add(SystemMenu);
 
         TagsMenu.setText("Tags");
+        TagsMenu.setFont(new java.awt.Font("Verdana", 1, 12)); // NOI18N
 
+        automaticallyTagFilesMenuItem.setFont(new java.awt.Font("Verdana", 0, 10)); // NOI18N
         automaticallyTagFilesMenuItem.setText("Automatically Tag Files");
         TagsMenu.add(automaticallyTagFilesMenuItem);
-
-        manuallyTagFilesMenuItem.setText("Manually Tag Files");
-        manuallyTagFilesMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                manuallyTagFilesMenuItemActionPerformed(evt);
-            }
-        });
-        TagsMenu.add(manuallyTagFilesMenuItem);
-        TagsMenu.add(jSeparator4);
-
-        associateFilesWithTagMenuItem.setText("Modify Files Associated with a Tag");
-        TagsMenu.add(associateFilesWithTagMenuItem);
-
-        associateTagsWithFilesMenuItem.setText("Modify Tags Associated with a File");
-        TagsMenu.add(associateTagsWithFilesMenuItem);
 
         MenuBar.add(TagsMenu);
 
         SearchesMenu.setText("Searches");
+        SearchesMenu.setFont(new java.awt.Font("Verdana", 1, 12)); // NOI18N
 
+        initiateSearchQueryMenuItem.setFont(new java.awt.Font("Verdana", 0, 10)); // NOI18N
         initiateSearchQueryMenuItem.setText("Initiate Search Query");
         initiateSearchQueryMenuItem.setActionCommand("initiateSearchQuery");
         SearchesMenu.add(initiateSearchQueryMenuItem);
@@ -380,7 +489,9 @@ public class UserInterface extends javax.swing.JFrame {
         MenuBar.add(SearchesMenu);
 
         IndexingMenu.setText("Indexing");
+        IndexingMenu.setFont(new java.awt.Font("Verdana", 1, 12)); // NOI18N
 
+        indexAllFilesMenuItem.setFont(new java.awt.Font("Verdana", 0, 10)); // NOI18N
         indexAllFilesMenuItem.setText("Index All Files");
         indexAllFilesMenuItem.setActionCommand("IndexAll");
         indexAllFilesMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -390,6 +501,7 @@ public class UserInterface extends javax.swing.JFrame {
         });
         IndexingMenu.add(indexAllFilesMenuItem);
 
+        indexNewFilesMenuItem.setFont(new java.awt.Font("Verdana", 0, 10)); // NOI18N
         indexNewFilesMenuItem.setText("Index New Files");
         indexNewFilesMenuItem.setActionCommand("IndexNew");
         indexNewFilesMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -398,10 +510,6 @@ public class UserInterface extends javax.swing.JFrame {
             }
         });
         IndexingMenu.add(indexNewFilesMenuItem);
-        IndexingMenu.add(jSeparator6);
-
-        addSpecificFilesToSystemMenuItem.setText("Add Specific Files to System");
-        IndexingMenu.add(addSpecificFilesToSystemMenuItem);
 
         MenuBar.add(IndexingMenu);
 
@@ -413,39 +521,39 @@ public class UserInterface extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(statusMessageScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 595, Short.MAX_VALUE)
+                    .addComponent(TabbedPane))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(MainPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(statusMessageScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 595, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(UserActionPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 649, Short.MAX_VALUE)
-                            .addComponent(ProgressBar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                    .addComponent(TabbedPane, javax.swing.GroupLayout.PREFERRED_SIZE, 1256, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap())
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addComponent(PrimaryActionPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 649, Short.MAX_VALUE)
+                        .addComponent(progressBar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(mainPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addGap(6, 6, 6)
-                .addComponent(TabbedPane, javax.swing.GroupLayout.PREFERRED_SIZE, 125, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(MainPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(12, 12, 12)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(TabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 538, Short.MAX_VALUE)
+                    .addComponent(mainPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(2, 2, 2)
-                        .addComponent(statusMessageScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(PrimaryActionPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(UserActionPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(ProgressBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addGap(7, 7, 7))
+                        .addComponent(progressBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(6, 6, 6))
+                    .addComponent(statusMessageScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
         );
 
         getAccessibleContext().setAccessibleName("Research Knowledge Manager - SE Senior Design");
 
-        setBounds(0, 0, 1296, 700);
+        setSize(new java.awt.Dimension(1283, 700));
+        setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
     private void SystemMenuMenuCanceled(javax.swing.event.MenuEvent evt) {//GEN-FIRST:event_SystemMenuMenuCanceled
@@ -459,10 +567,6 @@ public class UserInterface extends javax.swing.JFrame {
             System.err.println("I/O Error!");
         }
     }//GEN-LAST:event_changeRepositoryFolderMenuItemActionPerformed
-
-    private void manuallyTagFilesMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manuallyTagFilesMenuItemActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_manuallyTagFilesMenuItemActionPerformed
 
     private void pauseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pauseButtonActionPerformed
         if (executingThread != null) {
@@ -484,18 +588,17 @@ public class UserInterface extends javax.swing.JFrame {
         confirm.setVisible(true);
         if (confirm.getReturnStatus() == 1) {
             this.rm.clean();
-            ProgressBar.setMaximum(0);
+            progressBar.setMaximum(0);
 
             // Series of actions disabling menu items to prevent unexpected exceptions from user input
+            // These enable actions only matter if the application DOES NOT exit
             this.indexAllFilesMenuItem.setEnabled(false);
             this.indexNewFilesMenuItem.setEnabled(false);
-            this.addSpecificFilesToSystemMenuItem.setEnabled(false);
-            this.associateFilesWithTagMenuItem.setEnabled(false);
-            this.associateTagsWithFilesMenuItem.setEnabled(false);
             this.changeRepositoryFolderMenuItem.setEnabled(false);
             this.automaticallyTagFilesMenuItem.setEnabled(false);
-            this.manuallyTagFilesMenuItem.setEnabled(false);
             this.initiateSearchQueryMenuItem.setEnabled(false);
+
+            this.formWindowClosing(null);
         }
 
     }//GEN-LAST:event_cleanDataFilesMenuItemActionPerformed
@@ -534,18 +637,36 @@ public class UserInterface extends javax.swing.JFrame {
     }//GEN-LAST:event_startButtonActionPerformed
 
     private void TagTreeValueChanged(javax.swing.event.TreeSelectionEvent evt) {//GEN-FIRST:event_TagTreeValueChanged
-        // TODO add your handling code here:
+        // Current selection is on a node (tag name)
+        if (((TagModelTree) TagTree.getModel()).isHead(TagTree.getLastSelectedPathComponent())) {
+            this.removeFileFromTagButton.setEnabled(false);
+            this.addFileToTagButton.setEnabled(false);
+            this.modifyKeywordsButton.setEnabled(false);
+            this.newTagButton.setEnabled(true);
+        } // Selection is on a leaf
+        else if (TagTree.getModel().isLeaf(TagTree.getLastSelectedPathComponent())) {
 
+            this.removeFileFromTagButton.setEnabled(true);
+            this.addFileToTagButton.setEnabled(false);
+            this.modifyKeywordsButton.setEnabled(false);
+            this.newTagButton.setEnabled(true);
+
+        } else {
+            this.removeFileFromTagButton.setEnabled(false);
+            this.addFileToTagButton.setEnabled(true);
+            this.modifyKeywordsButton.setEnabled(true);
+            this.newTagButton.setEnabled(true);
+        }
     }//GEN-LAST:event_TagTreeValueChanged
 
-    private void ProgressBarStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_ProgressBarStateChanged
-        if (rm.ui.ProgressBar.getMaximum() > 0) {
-            rm.ui.ProgressBar.setString(100 * rm.ui.ProgressBar.getValue() / rm.ui.ProgressBar.getMaximum() + "%");
+    private void progressBarStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_progressBarStateChanged
+        if (rm.ui.progressBar.getMaximum() > 0) {
+            rm.ui.progressBar.setString(100 * rm.ui.progressBar.getValue() / rm.ui.progressBar.getMaximum() + "%");
         } else {
-            rm.ui.ProgressBar.setString("0%");
+            rm.ui.progressBar.setString("0%");
         }
 
-    }//GEN-LAST:event_ProgressBarStateChanged
+    }//GEN-LAST:event_progressBarStateChanged
 
     private void indexAllFilesMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_indexAllFilesMenuItemActionPerformed
         rm.setState(ResearchKnowledgeManager.activeState.READY);
@@ -554,10 +675,10 @@ public class UserInterface extends javax.swing.JFrame {
         this.executingThread = new Thread(() -> {
 
             //Thread initializations
-            ProgressBar.setMaximum(0);
+            progressBar.setMaximum(0);
             rm.setState(ResearchKnowledgeManager.activeState.ACTIVE);
             newMessage("Preparing some calculations, please wait");
-            ProgressBar.setMaximum(rm.fileIndexer.computeMaxFolderChild(rm.repositoryFolder));
+            progressBar.setMaximum(rm.fileIndexer.computeMaxFolderChild(rm.repositoryFolder));
 
             newMessage("Calculations completed! File indexing will now begin. Please wait for confirmation message...");
             rm.fileIndexer.indexAllReturn = rm.fileIndexer.indexFilesAll(rm.repositoryFolder, false, rm);
@@ -580,10 +701,10 @@ public class UserInterface extends javax.swing.JFrame {
         executingThread = new Thread(() -> {
 
             //Thread initializations
-            ProgressBar.setMaximum(0);
+            progressBar.setMaximum(0);
             rm.setState(ResearchKnowledgeManager.activeState.ACTIVE);
             newMessage("Preparing some calculations, please wait...");
-            ProgressBar.setMaximum(rm.fileIndexer.computeMaxFolderChild(rm.repositoryFolder));
+            progressBar.setMaximum(rm.fileIndexer.computeMaxFolderChild(rm.repositoryFolder));
             newMessage("Calculations completed! File indexing will now begin. Please wait for confirmation message...");
 
             rm.fileIndexer.indexNewReturn = rm.fileIndexer.indexFilesNew(rm.repositoryFolder, false, rm);
@@ -607,9 +728,9 @@ public class UserInterface extends javax.swing.JFrame {
 
         newMessage("Current action cancelled!");
         newMessage(rm.lineSeparator);
-        ProgressBar.setString("0%");
-        ProgressBar.setValue(0);
-        ProgressBar.setMaximum(0);
+        progressBar.setString("0%");
+        progressBar.setValue(0);
+        progressBar.setMaximum(0);
 
         switch (rm.actionStatus) {
             case READY: {
@@ -647,43 +768,120 @@ public class UserInterface extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_statusListKeyPressed
 
+    private void FileExplorerTreeValueChanged(javax.swing.event.TreeSelectionEvent evt) {//GEN-FIRST:event_FileExplorerTreeValueChanged
+
+    }//GEN-LAST:event_FileExplorerTreeValueChanged
+
+    private void mainPanelMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_mainPanelMouseEntered
+        // TODO add your handling code here:
+    }//GEN-LAST:event_mainPanelMouseEntered
+
+    private void newTagButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newTagButtonActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_newTagButtonActionPerformed
+
+    private void removeFileFromTagButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeFileFromTagButtonActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_removeFileFromTagButtonActionPerformed
+
+    private void addTagToFileButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addTagToFileButtonActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_addTagToFileButtonActionPerformed
+
+    private void TabbedPaneStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_TabbedPaneStateChanged
+        this.customActionPane.removeAll();
+
+        if (TabbedPane.getSelectedComponent() == this.TagTreePane) {
+
+            this.customActionPane.add(this.newTagButton);
+            this.customActionPane.add(this.addFileToTagButton);
+            this.customActionPane.add(this.modifyKeywordsButton);
+            this.customActionPane.add(this.removeFileFromTagButton);
+
+            // Sets the default state of the buttons to false
+            this.removeFileFromTagButton.setEnabled(false);
+            this.addFileToTagButton.setEnabled(false);
+            this.modifyKeywordsButton.setEnabled(false);
+            this.newTagButton.setEnabled(false);
+
+        } else if (TabbedPane.getSelectedComponent() == this.FileTreePane) {
+            this.customActionPane.add(this.addFileToSystemButton);
+            this.customActionPane.add(this.addTagToFileButton);
+            this.customActionPane.add(this.removeTagFromFileButton);
+
+            // Sets the default state of the buttons to false
+            this.removeTagFromFileButton.setEnabled(false);
+            this.addFileToSystemButton.setEnabled(false);
+            this.addTagToFileButton.setEnabled(false);
+
+        } else if (TabbedPane.getSelectedComponent() == this.FileExplorerTreePane) {
+
+        }
+
+        this.repaint();
+    }//GEN-LAST:event_TabbedPaneStateChanged
+
+    private void FileTreeValueChanged(javax.swing.event.TreeSelectionEvent evt) {//GEN-FIRST:event_FileTreeValueChanged
+
+        // Current selection is on a node (tag name)
+        if (((FileModelTree) FileTree.getModel()).isHead(FileTree.getLastSelectedPathComponent())) {
+            this.removeTagFromFileButton.setEnabled(false);
+            this.addFileToSystemButton.setEnabled(true);
+            this.addTagToFileButton.setEnabled(false);
+        } // Selection is on a leaf
+        else if (FileTree.getModel().isLeaf(FileTree.getLastSelectedPathComponent())) {
+
+            this.removeTagFromFileButton.setEnabled(true);
+            this.addFileToSystemButton.setEnabled(true);
+            this.addTagToFileButton.setEnabled(false);
+
+        } else {
+            this.removeTagFromFileButton.setEnabled(false);
+            this.addFileToSystemButton.setEnabled(true);
+            this.addTagToFileButton.setEnabled(true);
+        }
+    }//GEN-LAST:event_FileTreeValueChanged
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     protected javax.swing.JTree FileExplorerTree;
+    private javax.swing.JScrollPane FileExplorerTreePane;
     private javax.swing.JTree FileTree;
+    private javax.swing.JScrollPane FileTreePane;
     private javax.swing.JMenu IndexingMenu;
-    private javax.swing.JPanel MainPanel;
     private javax.swing.JMenuBar MenuBar;
-    protected javax.swing.JProgressBar ProgressBar;
-    private javax.swing.JButton QuitButton;
+    private javax.swing.JPanel PrimaryActionPanel;
+    private javax.swing.JScrollPane SearchKeywordScrollPane;
     private javax.swing.JMenu SearchesMenu;
-    private javax.swing.JButton SubmitButton;
     private javax.swing.JMenu SystemMenu;
     private javax.swing.JTabbedPane TabbedPane;
+    private javax.swing.JList TagItemSearchList;
+    private javax.swing.JScrollPane TagListItemScrollPane;
     private javax.swing.JTree TagTree;
+    private javax.swing.JScrollPane TagTreePane;
     private javax.swing.JMenu TagsMenu;
-    private javax.swing.JPanel UserActionPanel;
-    private javax.swing.JMenuItem addSpecificFilesToSystemMenuItem;
-    private javax.swing.JMenuItem associateFilesWithTagMenuItem;
-    private javax.swing.JMenuItem associateTagsWithFilesMenuItem;
+    private javax.swing.JButton addFileToSystemButton;
+    private javax.swing.JButton addFileToTagButton;
+    private javax.swing.JButton addTagToFileButton;
     private javax.swing.JMenuItem automaticallyTagFilesMenuItem;
     private javax.swing.JButton cancelButton;
     private javax.swing.JMenuItem changeRepositoryFolderMenuItem;
     private javax.swing.JMenuItem cleanDataFilesMenuItem;
+    private javax.swing.JPanel customActionPane;
     private javax.swing.JMenuItem indexAllFilesMenuItem;
     private javax.swing.JMenuItem indexNewFilesMenuItem;
     private javax.swing.JMenuItem initiateSearchQueryMenuItem;
-    private javax.swing.JMenuItem jMenuItem1;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JScrollPane jScrollPane3;
-    private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JPopupMenu.Separator jSeparator1;
     private javax.swing.JPopupMenu.Separator jSeparator2;
-    private javax.swing.JPopupMenu.Separator jSeparator4;
     private javax.swing.JPopupMenu.Separator jSeparator5;
-    private javax.swing.JPopupMenu.Separator jSeparator6;
-    private javax.swing.JMenuItem manuallyTagFilesMenuItem;
+    private javax.swing.JTextArea jTextArea1;
+    private javax.swing.JPanel mainPanel;
+    private javax.swing.JButton modifyKeywordsButton;
+    private javax.swing.JButton newTagButton;
     private javax.swing.JMenuItem openHelpDocumentMenuIte0;
     private javax.swing.JButton pauseButton;
+    protected javax.swing.JProgressBar progressBar;
+    private javax.swing.JButton removeFileFromTagButton;
+    private javax.swing.JButton removeTagFromFileButton;
     private javax.swing.JButton resumeButton;
     private javax.swing.JMenuItem safelyExitSystem;
     private javax.swing.JButton startButton;

@@ -371,13 +371,19 @@ public class ResearchKnowledgeManager {
 
     public static void main(String[] args) {
         ResearchKnowledgeManager rm = new ResearchKnowledgeManager();
-        rm.addFileClass(new FileClass("C:\\Program Files\\"));
-        rm.Files.get(0).addTag("Window Files");
-        rm.Files.get(0).addTag("Loco Files");
+//        rm.addTagClass(new TagClass("MyExample Tag", rm));
+//        rm.Tags.get(0).addFiles("H:\\");
+//        rm.Tags.get(0).addFiles("B:\\");
+//
+        rm.addTagClass(new TagClass("Another Tag", rm));
+        rm.Tags.get(0).addFiles("B:\\");
 
-        rm.addTagClass(new TagClass("Window Files"));
-        rm.Tags.get(0).addFiles("C:\\Program Files\\");
-
+        rm.addFileClass(new FileClass("C:\\Hello\\World.png", rm));
+        rm.Files.get(rm.Files.size() - 1).addTag("Baby");
+        rm.Files.get(rm.Files.size() - 1).addTag("Adult");
+        rm.Files.get(rm.Files.size() - 1).addTag("Another Tag");
+        rm.Files.get(rm.Files.size() - 1).addTag("Another Tag(2)");
+        rm.Files.get(rm.Files.size() - 1).addTag("a");
         return;
     }
 

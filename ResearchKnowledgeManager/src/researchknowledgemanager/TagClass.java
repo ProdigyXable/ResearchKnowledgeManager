@@ -11,6 +11,7 @@ public class TagClass {
 
     String TagName;
     int incrementCount = 20;
+    ResearchKnowledgeManager rm;
 
     // Array of Filenames
     Vector<String> associatedFiles;
@@ -18,10 +19,12 @@ public class TagClass {
     // Associated keywords for the tag
     Vector<String> keywords;
 
-    TagClass(String Name) {
+    TagClass(String Name, ResearchKnowledgeManager rkm) {
         this.TagName = Name.toLowerCase();
         this.associatedFiles = new Vector<>(incrementCount);
         this.keywords = new Vector<>(incrementCount);
+        rm = rkm;
+
     }
 
     public String toString() {
@@ -79,16 +82,37 @@ public class TagClass {
         this.associatedFiles.trimToSize();
 
         for (int i = 0; i < newFiles.length; i++) {
-            if (!this.associatedFiles.contains(newFiles[i].toLowerCase())) {
-                this.associatedFiles.add(newFiles[i].toLowerCase());
-            }
+            addFiles(newFiles[i]);
         }
     }
 
     void addFiles(String newFile) {
-        this.associatedFiles.trimToSize();
+
         if (!this.associatedFiles.contains(newFile.toLowerCase())) {
             this.associatedFiles.add(newFile.toLowerCase());
+
+            //Search for the specified file and append a tag to it in the file class
+            for (int j = 0; j < rm.Files.size(); j++) {
+
+                if (rm.Files.get(j).FileName.equals(newFile.toLowerCase())) {
+
+                    if (rm.debug) {
+                        System.err.println("Exising file found within the tag structure. Tag added to this file");
+                    }
+
+                    rm.Files.get(j).addTag(this.TagName);
+                    return;
+                }
+
+            }
+            rm.addFileClass(new FileClass(newFile, rm));
+            rm.Files.get(rm.Files.size() - 1).addTag(this.TagName);
+
+        } else {
+            if (rm.debug) {
+                System.err.println("FILE NOT FOUND. Adding file now\t" + newFile);
+            }
+
         }
     }
 

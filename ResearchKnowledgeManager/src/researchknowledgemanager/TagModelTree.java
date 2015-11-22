@@ -27,6 +27,10 @@ public class TagModelTree implements TreeModel {
         this.Tags = data;
     }
 
+    public boolean isHead(Object node) {
+        return node.equals(treeRootName);
+    }
+
     public Object getRoot() {
         return treeRootName;
     }
