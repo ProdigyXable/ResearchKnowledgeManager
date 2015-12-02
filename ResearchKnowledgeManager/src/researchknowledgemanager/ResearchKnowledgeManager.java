@@ -10,6 +10,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.List;
 import java.util.Vector;
 
 public class ResearchKnowledgeManager {
@@ -20,7 +21,7 @@ public class ResearchKnowledgeManager {
     }
 
     // Used for easy debugging within the system
-    boolean debug = true;
+    boolean debug = false;
     activeState actionStatus = activeState.INACTIVE;
     boolean initializeStatus = false;
     long lastOpened = 0;
@@ -39,6 +40,7 @@ public class ResearchKnowledgeManager {
     String repoParentFolderName = "\\Research Knowledge Manager\\";
     String repoFileName = "repo.txt";
     String lastModifiedFileName = "lastmod.txt";
+    String tagDataFileName = "system.data.txt";
 
     void setState(activeState state) {
         actionStatus = state;
@@ -75,28 +77,79 @@ public class ResearchKnowledgeManager {
     }
 
     void saveTags() throws IOException {
-        if (this.debug) {
-            System.out.println("Saving the TagClass data was successful!");
-        }
-        System.err.println("\tYou still need to implement this function!");
-    }
+        String buffer = "";
 
-    void saveFiles() throws IOException {
-        if (this.debug) {
-            System.out.println("Saving the FileClass data was successful!");
+        for (int i = 0; i < Tags.size(); i++) {
+            buffer += Tags.get(i).toStringSpecial(this.fileIndexer.indexParseDelimeter);
         }
-        System.err.println("\tYou still need to implement this function!");
+
+        FileWriter fileWrite = new FileWriter(dataDirectory.getAbsolutePath() + "\\" + this.tagDataFileName);
+        fileWrite.write(buffer);
+        fileWrite.close();
+
     }
 
     boolean loadTags() {
-        // Need to implement code to actually load the various tag data
+        ui.newMessage("Loading tag data. This may take a while...");
+
+        File tagDataFile = new File(this.dataDirectory.getAbsolutePath() + "\\" + this.tagDataFileName);
+        String fileData = "";
+        // Executes when the relevant time file does not exist
+        if (!tagDataFile.exists()) {
+            ui.newMessage("Tag data successfully loaded!");
+
+            return true;
+        } else {
+            try {
+
+                FileReader tagDataFileReader = new FileReader(tagDataFile);
+                if (tagDataFile.length() > 0) {
+                    char[] tagDataArray = new char[(int) tagDataFile.length()];
+
+                    tagDataFileReader.read(tagDataArray);
+                    fileData = String.copyValueOf(tagDataArray);
+
+                    // Data input parsing begins here
+                    String[] candidates = fileData.split("Tag: ");
+
+                    if (debug) {
+                        System.err.println("Possible saved tags: " + candidates.length);
+                    }
+
+                    // Contains all the possible tags in the system
+                    for (int i = 0; i < candidates.length - 1; i++) {
+
+                        // Splits string into before/after keywords
+                        String[] dataSplit = candidates[i + 1].split("\\" + this.fileIndexer.indexParseDelimeter + "keywords\\" + this.fileIndexer.indexParseDelimeter);
+
+                        // Splits string into before keyword section into filenames
+                        String[] confirmedFiles = dataSplit[0].split("\\" + this.fileIndexer.indexParseDelimeter);
+                        this.addTagClass(new TagClass(confirmedFiles[0], this));
+
+                        for (int k = 0; k < confirmedFiles.length - 1; k++) {
+                            this.Tags.get(this.Tags.size() - 1).addFiles(confirmedFiles[k + 1]);
+                        }
+
+                        if (dataSplit.length > 1) {
+                            confirmedFiles = dataSplit[1].split("\\" + this.fileIndexer.indexParseDelimeter);
+                            this.Tags.get(this.Tags.size() - 1).addKeywords(confirmedFiles);
+                        }
+
+                    }
+                }
+                this.ui.refreshTagItemList();
+                tagDataFileReader.close();
+
+            } catch (FileNotFoundException ex) {
+
+            } catch (IOException ex) {
+
+            }
+
+        }
+        ui.newMessage("Tag data successfully loaded!");
         return true;
 
-    }
-
-    boolean loadFiles() {
-        // Need to implement code to actually load the various file data
-        return true;
     }
 
     void exit() {
@@ -104,7 +157,6 @@ public class ResearchKnowledgeManager {
             this.saveTime();
             this.saveRepoDirectory();
             this.saveTags();
-            this.saveFiles();
 
         } catch (IOException ex) {
 
@@ -306,17 +358,58 @@ public class ResearchKnowledgeManager {
     }
 
     void addTagClass(TagClass newTagClass) {
-        this.Tags.add(newTagClass);
-        this.ui.updateTagTree();
+        boolean inStatus = false;
+
+        for (int i = 0; i < Tags.size(); i++) {
+            if (Tags.get(i).TagName.equals(newTagClass.TagName)) {
+                inStatus = true;
+                break;
+            }
+        }
+
+        if (inStatus == false) {
+            this.Tags.add(newTagClass);
+        }
     }
 
     void addFileClass(FileClass newFileClass) {
-        this.Files.add(newFileClass);
-        this.ui.updateFileTree();
+        boolean inStatus = false;
+
+        for (int i = 0; i < Files.size(); i++) {
+            if (Files.get(i).FileName.equals(newFileClass.FileName)) {
+                inStatus = true;
+                break;
+            }
+        }
+
+        if (inStatus == false) {
+            this.Files.add(newFileClass);
+
+        }
+    }
+
+    Vector<FileClass> findTagsComplete(List<TagClass> inputTags) {
+
+        Vector<FileClass> searchResults = new Vector<>();
+
+        for (int i = 0; i < Files.size(); i++) {
+            boolean bufferResult = true;
+            for (int j = 0; j < inputTags.size(); j++) {
+
+                // We can do partial tag completion if we replace &= with |=!
+                bufferResult &= Files.get(i).associatedTags.contains(inputTags.get(j).toString());
+            }
+
+            if (bufferResult) {
+                searchResults.add(Files.get(i));
+            }
+        }
+
+        return searchResults;
     }
 
     void updateLastModified() {
-        this.lastOpened = this.fileIndexer.lastOpened = System.currentTimeMillis();
+        this.lastOpened = System.currentTimeMillis();
 
         if (debug) {
             System.out.println("The last modified time has been updated! Current time is " + System.currentTimeMillis());
@@ -325,10 +418,11 @@ public class ResearchKnowledgeManager {
 
     final boolean initializeData() {
         this.dataDirectory = new File(System.getenv("APPDATA") + this.repoParentFolderName);
-        System.err.println("Need to load tag data and file data also!");
-        boolean buffer = this.loadRepoFolder() && this.loadTime() && this.loadTags() && this.loadFiles();
 
+        boolean buffer = this.loadRepoFolder() && this.loadTime() && this.loadTags();
         ui.newMessage(this.lineSeparator);
+        ui.refreshTagItemList();
+
         return buffer;
     }
 
@@ -371,19 +465,6 @@ public class ResearchKnowledgeManager {
 
     public static void main(String[] args) {
         ResearchKnowledgeManager rm = new ResearchKnowledgeManager();
-//        rm.addTagClass(new TagClass("MyExample Tag", rm));
-//        rm.Tags.get(0).addFiles("H:\\");
-//        rm.Tags.get(0).addFiles("B:\\");
-//
-        rm.addTagClass(new TagClass("Another Tag", rm));
-        rm.Tags.get(0).addFiles("B:\\");
-
-        rm.addFileClass(new FileClass("C:\\Hello\\World.png", rm));
-        rm.Files.get(rm.Files.size() - 1).addTag("Baby");
-        rm.Files.get(rm.Files.size() - 1).addTag("Adult");
-        rm.Files.get(rm.Files.size() - 1).addTag("Another Tag");
-        rm.Files.get(rm.Files.size() - 1).addTag("Another Tag(2)");
-        rm.Files.get(rm.Files.size() - 1).addTag("a");
         return;
     }
 

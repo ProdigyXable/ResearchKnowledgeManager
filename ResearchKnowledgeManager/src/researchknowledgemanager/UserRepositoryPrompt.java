@@ -57,6 +57,7 @@ public class UserRepositoryPrompt extends javax.swing.JDialog {
 
         UserInput.setFont(new java.awt.Font("Verdana", 0, 12)); // NOI18N
         UserInput.setToolTipText("Filepath of the repository folder. This file path should end in a '\\' such as C:\\My\\Folder\\Path\\");
+            UserInput.setBorder(javax.swing.BorderFactory.createEtchedBorder(javax.swing.border.EtchedBorder.RAISED));
             UserInput.addActionListener(new java.awt.event.ActionListener() {
                 public void actionPerformed(java.awt.event.ActionEvent evt) {
                     UserInputActionPerformed(evt);
@@ -82,9 +83,9 @@ public class UserRepositoryPrompt extends javax.swing.JDialog {
 
             currentRepFolder.setFont(new java.awt.Font("Verdana", 3, 12)); // NOI18N
             currentRepFolder.setText("[Dynamic text that will be changed during runtime]");
-            currentRepFolder.setBorder(javax.swing.BorderFactory.createCompoundBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createEmptyBorder(4, 4, 4, 4)));
+            currentRepFolder.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createEtchedBorder(javax.swing.border.EtchedBorder.RAISED), javax.swing.BorderFactory.createEmptyBorder(4, 4, 4, 4)));
 
-            jScrollPane2.setBorder(javax.swing.BorderFactory.createCompoundBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createEmptyBorder(4, 4, 4, 4)));
+            jScrollPane2.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createEtchedBorder(javax.swing.border.EtchedBorder.RAISED), javax.swing.BorderFactory.createEmptyBorder(4, 4, 4, 4)));
 
             jTextPane1.setEditable(false);
             jTextPane1.setBorder(null);
@@ -121,7 +122,7 @@ public class UserRepositoryPrompt extends javax.swing.JDialog {
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addContainerGap()
                         .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 98, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 10, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 12, Short.MAX_VALUE)
                         .addComponent(currentRepFolder)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(UserInput, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)

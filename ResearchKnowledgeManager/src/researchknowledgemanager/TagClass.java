@@ -20,7 +20,7 @@ public class TagClass {
     Vector<String> keywords;
 
     TagClass(String Name, ResearchKnowledgeManager rkm) {
-        this.TagName = Name.toLowerCase();
+        this.TagName = Name.toLowerCase().trim();
         this.associatedFiles = new Vector<>(incrementCount);
         this.keywords = new Vector<>(incrementCount);
         rm = rkm;
@@ -31,27 +31,28 @@ public class TagClass {
         return (this.TagName);
     }
 
-    String toSpecialString(String delimeter, boolean debug) {
-        String buffer = this.TagName;
+    String toStringSpecial(String delimeter) {
+        String buffer = "Tag: " + this.TagName;
         for (int i = 0; i < associatedFiles.size(); i++) {
-            buffer += delimeter + associatedFiles.get(i).toLowerCase();
+            buffer += delimeter + associatedFiles.get(i).toLowerCase().trim();
         }
 
         if (this.keywords.size() > 0) {
-            buffer += System.lineSeparator() + "keywords";
+            buffer += delimeter + "keywords";
 
             for (int i = 0; i < keywords.size(); i++) {
-                buffer += delimeter + keywords.get(i).toLowerCase();
+                buffer += delimeter + keywords.get(i).toLowerCase().trim();
             }
+            buffer += System.lineSeparator();
         } else {
-            if (debug) {
+            if (rm.debug) {
                 System.err.println();
                 System.err.println("This tags does not contain any keywords!");
                 System.err.println();
             }
         }
 
-        if (debug) {
+        if (rm.debug) {
             System.out.println("The data for this tag is as follows:");
             System.out.println("----------");
             System.out.println(buffer);
@@ -60,13 +61,16 @@ public class TagClass {
         return buffer;
     }
 
+    void addKeywords(String newKeyword) {
+        if (!this.keywords.contains(newKeyword.toLowerCase().trim())) {
+            this.keywords.add(newKeyword.toLowerCase().trim());
+        }
+    }
+
     void addKeywords(String[] newKeywords) {
-        this.keywords.trimToSize();
 
         for (int i = 0; i < newKeywords.length; i++) {
-            if (!this.keywords.contains(newKeywords[i].toLowerCase())) {
-                this.keywords.add(newKeywords[i].toLowerCase());
-            }
+            addKeywords(newKeywords[i]);
         }
     }
 
@@ -88,13 +92,13 @@ public class TagClass {
 
     void addFiles(String newFile) {
 
-        if (!this.associatedFiles.contains(newFile.toLowerCase())) {
-            this.associatedFiles.add(newFile.toLowerCase());
+        if (!this.associatedFiles.contains(newFile.toLowerCase().trim())) {
+            this.associatedFiles.add(newFile.toLowerCase().trim());
 
             //Search for the specified file and append a tag to it in the file class
             for (int j = 0; j < rm.Files.size(); j++) {
 
-                if (rm.Files.get(j).FileName.equals(newFile.toLowerCase())) {
+                if (rm.Files.get(j).FileName.equals(newFile.toLowerCase().trim())) {
 
                     if (rm.debug) {
                         System.err.println("Exising file found within the tag structure. Tag added to this file");
@@ -106,6 +110,8 @@ public class TagClass {
 
             }
             rm.addFileClass(new FileClass(newFile, rm));
+            rm.ui.updateFileTree();
+            rm.ui.updateTagTree();
             rm.Files.get(rm.Files.size() - 1).addTag(this.TagName);
 
         } else {
@@ -117,11 +123,11 @@ public class TagClass {
     }
 
     boolean removeKeyword(String deletedKeyword) {
-        return this.keywords.remove(deletedKeyword.toLowerCase());
+        return this.keywords.remove(deletedKeyword.toLowerCase().trim());
     }
 
     boolean removeFile(String deletedFile) {
-        return this.associatedFiles.remove(deletedFile.toLowerCase());
+        return this.associatedFiles.remove(deletedFile.toLowerCase().trim());
     }
 
     int keywordSize() {

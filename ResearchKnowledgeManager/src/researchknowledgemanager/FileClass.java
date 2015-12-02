@@ -18,14 +18,14 @@ public class FileClass {
     Vector<String> associatedTags;
 
     FileClass(String name, ResearchKnowledgeManager rkm) {
-        FileName = name.toLowerCase();
+        FileName = name.toLowerCase().trim();
         associatedTags = new Vector<>(incrementCount);
         rm = rkm;
 
     }
 
     FileClass(File file, ResearchKnowledgeManager rkm) {
-        FileName = file.toString().toLowerCase();
+        FileName = file.toString().toLowerCase().trim();
         rm = rkm;
     }
 
@@ -33,13 +33,14 @@ public class FileClass {
         return (this.FileName);
     }
 
-    String toStringSpecial(String delimeter, boolean debug) {
+    String toStringSpecial(String delimeter) {
         String buffer = this.FileName;
         for (int i = 0; i < associatedTags.size(); i++) {
-            buffer += delimeter + associatedTags.get(i).toLowerCase();
+            buffer += delimeter + associatedTags.get(i).toLowerCase().trim();
         }
+        buffer += System.lineSeparator();
 
-        if (debug) {
+        if (rm.debug) {
             System.out.println("The data for this file is as follows");
             System.out.println(buffer);
         }
@@ -48,7 +49,7 @@ public class FileClass {
     }
 
     boolean removeTag(String deletedTag) {
-        return this.associatedTags.remove(deletedTag.toLowerCase());
+        return this.associatedTags.remove(deletedTag.toLowerCase().trim());
     }
 
     void cleanTags() {
@@ -62,22 +63,23 @@ public class FileClass {
     }
 
     void addTag(String tagItem) {
-        if (!this.associatedTags.contains(tagItem.toLowerCase())) {
-            this.associatedTags.addElement(tagItem.toLowerCase());
+        if (!this.associatedTags.contains(tagItem.toLowerCase().trim())) {
+            this.associatedTags.addElement(tagItem.toLowerCase().trim());
 
             //Search for the specified file and append a tag to it in the file class
             for (int j = 0; j < rm.Tags.size(); j++) {
 
-                if (rm.Tags.get(j).TagName.equals(tagItem.toLowerCase())) {
+                if (rm.Tags.get(j).TagName.equals(tagItem.toLowerCase().trim())) {
 
                     if (rm.debug) {
                         System.err.println("Existing tag found within the file structure. File added to this Tag");
                     }
 
                     rm.Tags.get(j).addFiles(this.FileName);
+
                     return;
                 } else {
-                    System.err.println("Somethingi unknown happened...");
+                    // Tag.get(j) does not match the input tagItem
                 }
 
             }
@@ -85,6 +87,8 @@ public class FileClass {
             rm.addTagClass(new TagClass(tagItem, rm));
             rm.Tags.get(rm.Tags.size() - 1).addFiles(this.FileName);
             rm.ui.refreshTagItemList();
+            rm.ui.updateFileTree();
+            rm.ui.updateTagTree();
 
         } else {
             if (rm.debug) {

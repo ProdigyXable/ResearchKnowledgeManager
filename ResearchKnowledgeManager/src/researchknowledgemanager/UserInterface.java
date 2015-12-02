@@ -7,6 +7,8 @@ package researchknowledgemanager;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
+import java.util.Vector;
 import javax.swing.DefaultListModel;
 import javax.swing.SwingUtilities;
 import javax.swing.tree.TreeSelectionModel;
@@ -120,7 +122,7 @@ public class UserInterface extends javax.swing.JFrame {
 
         // List should already be ensured to no have duplicates
         for (int i = 0; i < rm.Tags.size(); i++) {
-            this.newTagItem(this.rm.Tags.get(i).toString());
+            this.TagItemListModel.addElement(this.rm.Tags.get(i));
         }
 
     }
@@ -133,6 +135,7 @@ public class UserInterface extends javax.swing.JFrame {
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
+        bindingGroup = new org.jdesktop.beansbinding.BindingGroup();
 
         modifyKeywordsButton = new javax.swing.JButton();
         removeTagFromFileButton = new javax.swing.JButton();
@@ -141,6 +144,10 @@ public class UserInterface extends javax.swing.JFrame {
         addFileToSystemButton = new javax.swing.JButton();
         addFileToTagButton = new javax.swing.JButton();
         newTagButton = new javax.swing.JButton();
+        SearchResultsPopupMenu = new javax.swing.JPopupMenu();
+        OpenFillePopupMenuItem = new javax.swing.JMenuItem();
+        RootFolderPopupMenuItem = new javax.swing.JMenuItem();
+        TagFilePopupMenuItem = new javax.swing.JMenuItem();
         TabbedPane = new javax.swing.JTabbedPane();
         FileExplorerTreePane = new javax.swing.JScrollPane();
         FileExplorerTree = new javax.swing.JTree();
@@ -160,7 +167,10 @@ public class UserInterface extends javax.swing.JFrame {
         TagListItemScrollPane = new javax.swing.JScrollPane();
         TagItemSearchList = new javax.swing.JList();
         SearchKeywordScrollPane = new javax.swing.JScrollPane();
-        jTextArea1 = new javax.swing.JTextArea();
+        SearchKeyWordsTextArea = new javax.swing.JTextArea();
+        StartSearchButton = new javax.swing.JButton();
+        SearchResultsListScrollPane = new javax.swing.JScrollPane();
+        searchResultsList = new javax.swing.JList();
         progressBar = new javax.swing.JProgressBar();
         MenuBar = new javax.swing.JMenuBar();
         SystemMenu = new javax.swing.JMenu();
@@ -181,12 +191,21 @@ public class UserInterface extends javax.swing.JFrame {
 
         modifyKeywordsButton.setFont(new java.awt.Font("Verdana", 1, 10)); // NOI18N
         modifyKeywordsButton.setText("Modify Tag Keywords");
+        modifyKeywordsButton.setActionCommand("");
+        modifyKeywordsButton.setAlignmentX(0.5F);
+        modifyKeywordsButton.setBorder(javax.swing.BorderFactory.createEtchedBorder(javax.swing.border.EtchedBorder.RAISED));
 
         removeTagFromFileButton.setFont(new java.awt.Font("Verdana", 1, 10)); // NOI18N
         removeTagFromFileButton.setText("Remove Tag(s) from File");
+        removeTagFromFileButton.setActionCommand("");
+        removeTagFromFileButton.setAlignmentX(0.5F);
+        removeTagFromFileButton.setBorder(javax.swing.BorderFactory.createEtchedBorder(javax.swing.border.EtchedBorder.RAISED));
 
         removeFileFromTagButton.setFont(new java.awt.Font("Verdana", 1, 10)); // NOI18N
         removeFileFromTagButton.setText("Remove File(s) from Tag");
+        removeFileFromTagButton.setActionCommand("");
+        removeFileFromTagButton.setAlignmentX(0.5F);
+        removeFileFromTagButton.setBorder(javax.swing.BorderFactory.createEtchedBorder(javax.swing.border.EtchedBorder.RAISED));
         removeFileFromTagButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 removeFileFromTagButtonActionPerformed(evt);
@@ -195,6 +214,9 @@ public class UserInterface extends javax.swing.JFrame {
 
         addTagToFileButton.setFont(new java.awt.Font("Verdana", 1, 10)); // NOI18N
         addTagToFileButton.setText("Add Tag(s) to File");
+        addTagToFileButton.setActionCommand("");
+        addTagToFileButton.setAlignmentX(0.5F);
+        addTagToFileButton.setBorder(javax.swing.BorderFactory.createEtchedBorder(javax.swing.border.EtchedBorder.RAISED));
         addTagToFileButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addTagToFileButtonActionPerformed(evt);
@@ -203,16 +225,23 @@ public class UserInterface extends javax.swing.JFrame {
 
         addFileToSystemButton.setFont(new java.awt.Font("Verdana", 1, 10)); // NOI18N
         addFileToSystemButton.setText("Add File(s) to System");
+        addFileToSystemButton.setActionCommand("");
+        addFileToSystemButton.setAlignmentX(0.5F);
+        addFileToSystemButton.setBorder(javax.swing.BorderFactory.createEtchedBorder(javax.swing.border.EtchedBorder.RAISED));
 
         addFileToTagButton.setFont(new java.awt.Font("Verdana", 1, 10)); // NOI18N
         addFileToTagButton.setText("Add File(s) to Tag");
+        addFileToTagButton.setActionCommand("");
         addFileToTagButton.setAlignmentX(0.5F);
+        addFileToTagButton.setBorder(javax.swing.BorderFactory.createEtchedBorder(javax.swing.border.EtchedBorder.RAISED));
         addFileToTagButton.setMargin(new java.awt.Insets(2, 6, 2, 6));
         addFileToTagButton.getAccessibleContext().setAccessibleDescription("");
 
         newTagButton.setFont(new java.awt.Font("Verdana", 1, 10)); // NOI18N
         newTagButton.setText("Create New Tag");
+        newTagButton.setActionCommand("");
         newTagButton.setAlignmentX(0.5F);
+        newTagButton.setBorder(javax.swing.BorderFactory.createEtchedBorder(javax.swing.border.EtchedBorder.RAISED));
         newTagButton.setMargin(new java.awt.Insets(2, 6, 2, 6));
         newTagButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -220,6 +249,20 @@ public class UserInterface extends javax.swing.JFrame {
             }
         });
         newTagButton.getAccessibleContext().setAccessibleDescription("");
+
+        SearchResultsPopupMenu.setFont(new java.awt.Font("Verdana", 0, 10)); // NOI18N
+
+        OpenFillePopupMenuItem.setFont(new java.awt.Font("Verdana", 0, 10)); // NOI18N
+        OpenFillePopupMenuItem.setText("Open/Launch File");
+        SearchResultsPopupMenu.add(OpenFillePopupMenuItem);
+
+        RootFolderPopupMenuItem.setFont(new java.awt.Font("Verdana", 0, 10)); // NOI18N
+        RootFolderPopupMenuItem.setText("Open File's Parent Folder");
+        SearchResultsPopupMenu.add(RootFolderPopupMenuItem);
+
+        TagFilePopupMenuItem.setFont(new java.awt.Font("Verdana", 0, 10)); // NOI18N
+        TagFilePopupMenuItem.setText("Tag File");
+        SearchResultsPopupMenu.add(TagFilePopupMenuItem);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Research Knowledge Manager - SE Senior Design UTD Fall 2015");
@@ -242,7 +285,7 @@ public class UserInterface extends javax.swing.JFrame {
             }
         });
 
-        TabbedPane.setFont(new java.awt.Font("Verdana", 1, 12)); // NOI18N
+        TabbedPane.setFont(new java.awt.Font("Verdana", 0, 12)); // NOI18N
         TabbedPane.setInheritsPopupMenu(true);
         TabbedPane.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
@@ -289,6 +332,7 @@ public class UserInterface extends javax.swing.JFrame {
         statusMessageScrollPane.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         statusMessageScrollPane.setAutoscrolls(true);
 
+        statusList.setBorder(javax.swing.BorderFactory.createEtchedBorder(javax.swing.border.EtchedBorder.RAISED));
         statusList.setFont(new java.awt.Font("Verdana", 2, 10)); // NOI18N
         statusList.setModel(this.statusMessages);
         statusList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
@@ -309,7 +353,9 @@ public class UserInterface extends javax.swing.JFrame {
 
         startButton.setFont(new java.awt.Font("Verdana", 1, 10)); // NOI18N
         startButton.setText("Start Action");
+        startButton.setActionCommand("");
         startButton.setAlignmentX(0.5F);
+        startButton.setBorder(javax.swing.BorderFactory.createEtchedBorder(javax.swing.border.EtchedBorder.RAISED));
         startButton.setMargin(new java.awt.Insets(2, 6, 2, 6));
         startButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -321,7 +367,9 @@ public class UserInterface extends javax.swing.JFrame {
 
         resumeButton.setFont(new java.awt.Font("Verdana", 1, 10)); // NOI18N
         resumeButton.setText("Resume Action");
+        resumeButton.setActionCommand("");
         resumeButton.setAlignmentX(0.5F);
+        resumeButton.setBorder(javax.swing.BorderFactory.createEtchedBorder(javax.swing.border.EtchedBorder.RAISED));
         resumeButton.setMargin(new java.awt.Insets(2, 6, 2, 6));
         resumeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -333,7 +381,9 @@ public class UserInterface extends javax.swing.JFrame {
 
         pauseButton.setFont(new java.awt.Font("Verdana", 1, 10)); // NOI18N
         pauseButton.setText("Pause Action");
+        pauseButton.setActionCommand("");
         pauseButton.setAlignmentX(0.5F);
+        pauseButton.setBorder(javax.swing.BorderFactory.createEtchedBorder(javax.swing.border.EtchedBorder.RAISED));
         pauseButton.setMargin(new java.awt.Insets(2, 6, 2, 6));
         pauseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -345,7 +395,9 @@ public class UserInterface extends javax.swing.JFrame {
 
         cancelButton.setFont(new java.awt.Font("Verdana", 1, 10)); // NOI18N
         cancelButton.setText("Cancel Action");
+        cancelButton.setActionCommand("");
         cancelButton.setAlignmentX(0.5F);
+        cancelButton.setBorder(javax.swing.BorderFactory.createEtchedBorder(javax.swing.border.EtchedBorder.RAISED));
         cancelButton.setMargin(new java.awt.Insets(2, 6, 2, 6));
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -356,56 +408,102 @@ public class UserInterface extends javax.swing.JFrame {
         cancelButton.getAccessibleContext().setAccessibleDescription("");
 
         mainPanel.setBackground(new java.awt.Color(229, 229, 229));
-        mainPanel.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0), 1, true)));
-        mainPanel.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-                mainPanelMouseEntered(evt);
-            }
-        });
+        mainPanel.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createEtchedBorder(javax.swing.border.EtchedBorder.RAISED)));
 
-        customActionPane.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        customActionPane.setBorder(javax.swing.BorderFactory.createEtchedBorder(javax.swing.border.EtchedBorder.RAISED));
         customActionPane.setMinimumSize(new java.awt.Dimension(817, 28));
         customActionPane.setLayout(new java.awt.GridLayout(0, 3, 2, 2));
 
-        TagListItemScrollPane.setViewportBorder(javax.swing.BorderFactory.createTitledBorder(null, "Tag List Item", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Verdana", 0, 12))); // NOI18N
+        TagListItemScrollPane.setBorder(SearchKeywordScrollPane.getBorder());
+        TagListItemScrollPane.setViewportBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(javax.swing.border.EtchedBorder.RAISED), "Tag Query Terms", javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Verdana", 0, 10)), javax.swing.BorderFactory.createEmptyBorder(4, 4, 4, 4))); // NOI18N
 
+        TagItemSearchList.setBorder(javax.swing.BorderFactory.createEtchedBorder(javax.swing.border.EtchedBorder.RAISED));
         TagItemSearchList.setFont(new java.awt.Font("Verdana", 0, 12)); // NOI18N
         TagItemSearchList.setModel(this.TagItemListModel);
+
+        org.jdesktop.beansbinding.Binding binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ, mainPanel, org.jdesktop.beansbinding.ELProperty.create("${enabled}"), TagItemSearchList, org.jdesktop.beansbinding.BeanProperty.create("enabled"));
+        bindingGroup.addBinding(binding);
+
         TagListItemScrollPane.setViewportView(TagItemSearchList);
 
-        SearchKeywordScrollPane.setViewportBorder(javax.swing.BorderFactory.createTitledBorder(null, "Search Keywords", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Verdana", 0, 12))); // NOI18N
+        SearchKeywordScrollPane.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createEtchedBorder(javax.swing.border.EtchedBorder.RAISED), javax.swing.BorderFactory.createEmptyBorder(4, 4, 4, 4)));
+        SearchKeywordScrollPane.setViewportBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(javax.swing.border.EtchedBorder.RAISED), "Keyword Query Terms", javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Verdana", 0, 10)), javax.swing.BorderFactory.createEmptyBorder(4, 4, 4, 4))); // NOI18N
 
-        jTextArea1.setColumns(20);
-        jTextArea1.setRows(5);
-        SearchKeywordScrollPane.setViewportView(jTextArea1);
+        SearchKeyWordsTextArea.setColumns(25);
+        SearchKeyWordsTextArea.setFont(new java.awt.Font("Verdana", 0, 12)); // NOI18N
+        SearchKeyWordsTextArea.setBorder(javax.swing.BorderFactory.createEtchedBorder(javax.swing.border.EtchedBorder.RAISED, java.awt.Color.white, null));
+
+        binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ, mainPanel, org.jdesktop.beansbinding.ELProperty.create("${enabled}"), SearchKeyWordsTextArea, org.jdesktop.beansbinding.BeanProperty.create("enabled"));
+        bindingGroup.addBinding(binding);
+
+        SearchKeywordScrollPane.setViewportView(SearchKeyWordsTextArea);
+
+        StartSearchButton.setText("Perform Search");
+        StartSearchButton.setActionCommand("");
+        StartSearchButton.setAlignmentX(0.5F);
+        StartSearchButton.setBorder(javax.swing.BorderFactory.createEtchedBorder(javax.swing.border.EtchedBorder.RAISED));
+
+        binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ, mainPanel, org.jdesktop.beansbinding.ELProperty.create("${enabled}"), StartSearchButton, org.jdesktop.beansbinding.BeanProperty.create("enabled"));
+        bindingGroup.addBinding(binding);
+
+        StartSearchButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                StartSearchButtonActionPerformed(evt);
+            }
+        });
+
+        SearchResultsListScrollPane.setBorder(SearchKeywordScrollPane.getBorder());
+        SearchResultsListScrollPane.setViewportBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(javax.swing.border.EtchedBorder.RAISED), "Search Results", javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Verdana", 0, 10)), javax.swing.BorderFactory.createEmptyBorder(4, 4, 4, 4))); // NOI18N
+
+        searchResultsList.setBorder(TagItemSearchList.getBorder());
+        searchResultsList.setFont(new java.awt.Font("Verdana", 2, 10)); // NOI18N
+        searchResultsList.setModel(new DefaultListModel());
+        searchResultsList.setComponentPopupMenu(SearchResultsPopupMenu);
+        searchResultsList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
+            public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
+                searchResultsListValueChanged(evt);
+            }
+        });
+        SearchResultsListScrollPane.setViewportView(searchResultsList);
 
         javax.swing.GroupLayout mainPanelLayout = new javax.swing.GroupLayout(mainPanel);
         mainPanel.setLayout(mainPanelLayout);
         mainPanelLayout.setHorizontalGroup(
             mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(customActionPane, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 643, Short.MAX_VALUE)
+            .addGroup(mainPanelLayout.createSequentialGroup()
+                .addComponent(customActionPane, javax.swing.GroupLayout.PREFERRED_SIZE, 736, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, Short.MAX_VALUE))
             .addGroup(mainPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(TagListItemScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(SearchKeywordScrollPane)
-                .addContainerGap())
+                .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(mainPanelLayout.createSequentialGroup()
+                        .addComponent(TagListItemScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 246, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(StartSearchButton, javax.swing.GroupLayout.PREFERRED_SIZE, 460, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(SearchKeywordScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 460, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(SearchResultsListScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 712, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         mainPanelLayout.setVerticalGroup(
             mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, mainPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(TagListItemScrollPane)
-                    .addGroup(mainPanelLayout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(SearchKeywordScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addComponent(SearchResultsListScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 227, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(customActionPane, javax.swing.GroupLayout.PREFERRED_SIZE, 48, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addGroup(mainPanelLayout.createSequentialGroup()
+                        .addComponent(SearchKeywordScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 128, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(StartSearchButton, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(TagListItemScrollPane))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(customActionPane, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
-        progressBar.setFont(new java.awt.Font("Verdana", 3, 14)); // NOI18N
+        progressBar.setFont(new java.awt.Font("Verdana", 0, 10)); // NOI18N
         progressBar.setMaximum(0);
+        progressBar.setBorder(javax.swing.BorderFactory.createEtchedBorder(javax.swing.border.EtchedBorder.RAISED));
         progressBar.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
         progressBar.setName(""); // NOI18N
         progressBar.setOpaque(false);
@@ -418,7 +516,7 @@ public class UserInterface extends javax.swing.JFrame {
         });
 
         SystemMenu.setText("System");
-        SystemMenu.setFont(new java.awt.Font("Verdana", 1, 12)); // NOI18N
+        SystemMenu.setFont(new java.awt.Font("Verdana", 0, 12)); // NOI18N
         SystemMenu.addMenuListener(new javax.swing.event.MenuListener() {
             public void menuCanceled(javax.swing.event.MenuEvent evt) {
                 SystemMenuMenuCanceled(evt);
@@ -470,7 +568,7 @@ public class UserInterface extends javax.swing.JFrame {
         MenuBar.add(SystemMenu);
 
         TagsMenu.setText("Tags");
-        TagsMenu.setFont(new java.awt.Font("Verdana", 1, 12)); // NOI18N
+        TagsMenu.setFont(new java.awt.Font("Verdana", 0, 12)); // NOI18N
 
         automaticallyTagFilesMenuItem.setFont(new java.awt.Font("Verdana", 0, 10)); // NOI18N
         automaticallyTagFilesMenuItem.setText("Automatically Tag Files");
@@ -479,7 +577,7 @@ public class UserInterface extends javax.swing.JFrame {
         MenuBar.add(TagsMenu);
 
         SearchesMenu.setText("Searches");
-        SearchesMenu.setFont(new java.awt.Font("Verdana", 1, 12)); // NOI18N
+        SearchesMenu.setFont(new java.awt.Font("Verdana", 0, 12)); // NOI18N
 
         initiateSearchQueryMenuItem.setFont(new java.awt.Font("Verdana", 0, 10)); // NOI18N
         initiateSearchQueryMenuItem.setText("Initiate Search Query");
@@ -489,7 +587,7 @@ public class UserInterface extends javax.swing.JFrame {
         MenuBar.add(SearchesMenu);
 
         IndexingMenu.setText("Indexing");
-        IndexingMenu.setFont(new java.awt.Font("Verdana", 1, 12)); // NOI18N
+        IndexingMenu.setFont(new java.awt.Font("Verdana", 0, 12)); // NOI18N
 
         indexAllFilesMenuItem.setFont(new java.awt.Font("Verdana", 0, 10)); // NOI18N
         indexAllFilesMenuItem.setText("Index All Files");
@@ -521,36 +619,42 @@ public class UserInterface extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(statusMessageScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 595, Short.MAX_VALUE)
-                    .addComponent(TabbedPane))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                        .addComponent(PrimaryActionPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 649, Short.MAX_VALUE)
-                        .addComponent(progressBar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addComponent(mainPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(statusMessageScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 660, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(PrimaryActionPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(progressBar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(TabbedPane, javax.swing.GroupLayout.PREFERRED_SIZE, 500, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(mainPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addGap(12, 12, 12)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(mainPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(TabbedPane, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(TabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 538, Short.MAX_VALUE)
-                    .addComponent(mainPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 14, Short.MAX_VALUE)
+                        .addComponent(statusMessageScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 106, Short.MAX_VALUE)
+                        .addContainerGap())
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(36, 36, 36)
                         .addComponent(PrimaryActionPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(progressBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(6, 6, 6))
-                    .addComponent(statusMessageScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap())
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
         );
 
         getAccessibleContext().setAccessibleName("Research Knowledge Manager - SE Senior Design");
+
+        bindingGroup.bind();
 
         setSize(new java.awt.Dimension(1283, 700));
         setLocationRelativeTo(null);
@@ -687,8 +791,11 @@ public class UserInterface extends javax.swing.JFrame {
             rm.fileIndexer.saveIndexAll(rm.dataDirectory);
 
             // Thread cleanup
+            this.updateFileTree();
+            this.updateTagTree();
             newMessage("Finished processing all files!");
             rm.setState(ResearchKnowledgeManager.activeState.INACTIVE);
+            rm.updateLastModified();
             executingThread = null;
         });
 
@@ -713,8 +820,11 @@ public class UserInterface extends javax.swing.JFrame {
             rm.fileIndexer.saveIndexNew(rm.dataDirectory);
 
             // Thread cleanup
+            this.updateFileTree();
+            this.updateTagTree();
             newMessage("Finished processing new files!");
             rm.setState(ResearchKnowledgeManager.activeState.INACTIVE);
+            rm.updateLastModified();
             executingThread = null;
         });
 
@@ -771,10 +881,6 @@ public class UserInterface extends javax.swing.JFrame {
     private void FileExplorerTreeValueChanged(javax.swing.event.TreeSelectionEvent evt) {//GEN-FIRST:event_FileExplorerTreeValueChanged
 
     }//GEN-LAST:event_FileExplorerTreeValueChanged
-
-    private void mainPanelMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_mainPanelMouseEntered
-        // TODO add your handling code here:
-    }//GEN-LAST:event_mainPanelMouseEntered
 
     private void newTagButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newTagButtonActionPerformed
         // TODO add your handling code here:
@@ -842,6 +948,43 @@ public class UserInterface extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_FileTreeValueChanged
 
+    private void StartSearchButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_StartSearchButtonActionPerformed
+        if (!this.SearchKeyWordsTextArea.getText().trim().equals("")) {
+            throw new RuntimeException("Searching with keywords is currently not implemented...");
+        }
+
+        List<TagClass> selectedTags = this.TagItemSearchList.getSelectedValuesList();
+
+        if (selectedTags.isEmpty()) {
+            newMessage("Search cannot be completed! No tag terms were selected.");
+            newMessage(rm.lineSeparator);
+        } else {
+            newMessage("Performing Tag-based Search...");
+            newMessage(rm.lineSeparator);
+
+            Vector<FileClass> tagResults = rm.findTagsComplete(selectedTags);
+
+            if (this.SearchKeyWordsTextArea.getText().trim().equals("")) {
+                // rm.parseKeyWords(tagResults);
+                // searchKeyWords();
+            }
+
+            DefaultListModel buffer = new DefaultListModel();
+
+            for (int i = 0; i < tagResults.size(); i++) {
+                buffer.addElement(tagResults.get(i));
+            }
+
+            this.searchResultsList.setModel(buffer);
+
+        }
+
+    }//GEN-LAST:event_StartSearchButtonActionPerformed
+
+    private void searchResultsListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_searchResultsListValueChanged
+
+    }//GEN-LAST:event_searchResultsListValueChanged
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     protected javax.swing.JTree FileExplorerTree;
     private javax.swing.JScrollPane FileExplorerTreePane;
@@ -849,11 +992,18 @@ public class UserInterface extends javax.swing.JFrame {
     private javax.swing.JScrollPane FileTreePane;
     private javax.swing.JMenu IndexingMenu;
     private javax.swing.JMenuBar MenuBar;
+    private javax.swing.JMenuItem OpenFillePopupMenuItem;
     private javax.swing.JPanel PrimaryActionPanel;
+    private javax.swing.JMenuItem RootFolderPopupMenuItem;
+    private javax.swing.JTextArea SearchKeyWordsTextArea;
     private javax.swing.JScrollPane SearchKeywordScrollPane;
+    private javax.swing.JScrollPane SearchResultsListScrollPane;
+    private javax.swing.JPopupMenu SearchResultsPopupMenu;
     private javax.swing.JMenu SearchesMenu;
+    private javax.swing.JButton StartSearchButton;
     private javax.swing.JMenu SystemMenu;
     private javax.swing.JTabbedPane TabbedPane;
+    private javax.swing.JMenuItem TagFilePopupMenuItem;
     private javax.swing.JList TagItemSearchList;
     private javax.swing.JScrollPane TagListItemScrollPane;
     private javax.swing.JTree TagTree;
@@ -873,7 +1023,6 @@ public class UserInterface extends javax.swing.JFrame {
     private javax.swing.JPopupMenu.Separator jSeparator1;
     private javax.swing.JPopupMenu.Separator jSeparator2;
     private javax.swing.JPopupMenu.Separator jSeparator5;
-    private javax.swing.JTextArea jTextArea1;
     private javax.swing.JPanel mainPanel;
     private javax.swing.JButton modifyKeywordsButton;
     private javax.swing.JButton newTagButton;
@@ -884,9 +1033,11 @@ public class UserInterface extends javax.swing.JFrame {
     private javax.swing.JButton removeTagFromFileButton;
     private javax.swing.JButton resumeButton;
     private javax.swing.JMenuItem safelyExitSystem;
+    private javax.swing.JList searchResultsList;
     private javax.swing.JButton startButton;
     private javax.swing.JList statusList;
     private javax.swing.JScrollPane statusMessageScrollPane;
+    private org.jdesktop.beansbinding.BindingGroup bindingGroup;
     // End of variables declaration//GEN-END:variables
 
 }
