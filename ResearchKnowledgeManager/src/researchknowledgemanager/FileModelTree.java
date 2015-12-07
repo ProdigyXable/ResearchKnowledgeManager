@@ -12,44 +12,68 @@ import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 
 /**
+ * Model tree used for JList and a Vector of FileClass
  *
+ * @see ResearchKnowledgeManager#Files
  * @author Xable Enterprises
  */
-public class FileModelTree implements TreeModel {
+public class FileModelTree implements TreeModel
+{
 
     Vector<FileClass> Files;
+
     String treeRootName = "List of Files and Associated Tags";
+
     String nullLeafName = "No tags associated with this file...";
+
     String emptyTree = "No files detected within the system...";
 
-    FileModelTree(Vector<FileClass> data) {
+    FileModelTree(Vector<FileClass> data)
+    {
         this.Files = data;
     }
 
-    public boolean isHead(Object node) {
+    public boolean isHead(Object node)
+    {
         return node.equals(treeRootName);
     }
 
-    public Object getRoot() {
+    public Object getRoot()
+    {
 
         return this.treeRootName;
     }
 
-    public Object getChild(Object parent, int index) {
-        if (parent.equals(treeRootName)) {
-            if (Files.size() > 0) {
+    public Object getChild(Object parent, int index)
+    {
+        if (parent.equals(treeRootName))
+        {
+            if (Files.size() > 0)
+            {
                 return Files.get(index);
-            } else {
+            }
+            else
+            {
                 return emptyTree;
             }
-        } else if (parent.getClass() == FileClass.class) {
+        }
+        else
+        {
+            if (parent.getClass() == FileClass.class)
+            {
 
-            for (int i = 0; i < Files.size(); i++) {
-                if (Files.get(i) == parent) {
-                    if (Files.get(i).associatedTags.size() > 0) {
-                        return Files.get(i).associatedTags.get(index);
-                    } else {
-                        return nullLeafName;
+                for (int i = 0; i < Files.size(); i++)
+                {
+                    if (Files.get(i) == parent)
+                    {
+                        if (Files.get(i).associatedTags.size() > 0)
+                        {
+                            return Files.get(i).associatedTags.get(index);
+                        }
+                        else
+                        {
+                            return nullLeafName;
+                        }
                     }
                 }
             }
@@ -60,17 +84,29 @@ public class FileModelTree implements TreeModel {
 
     }
 
-    public int getChildCount(Object parent) {
-        if (parent.equals(treeRootName)) {
-            if (Files.size() > 0) {
+    public int getChildCount(Object parent)
+    {
+        if (parent.equals(treeRootName))
+        {
+            if (Files.size() > 0)
+            {
                 return Files.size();
-            } else {
+            }
+            else
+            {
                 return 1;
             }
-        } else if (parent.getClass() == FileClass.class) {
-            for (int i = 0; i < Files.size(); i++) {
-                if (Files.get(i) == parent) {
-                    return max(Files.get(i).associatedTags.size(), 1);
+        }
+        else
+        {
+            if (parent.getClass() == FileClass.class)
+            {
+                for (int i = 0; i < Files.size(); i++)
+                {
+                    if (Files.get(i) == parent)
+                    {
+                        return max(Files.get(i).associatedTags.size(), 1);
+                    }
                 }
             }
         }
@@ -78,29 +114,42 @@ public class FileModelTree implements TreeModel {
         return -1;
     }
 
-    public boolean isLeaf(Object node) {
-        if (node.equals(treeRootName)) {
+    public boolean isLeaf(Object node)
+    {
+        if (node.equals(treeRootName))
+        {
             return false;
-        } else {
+        }
+        else
+        {
             return (node.getClass() == String.class);
         }
 
     }
 
-    public int getIndexOfChild(Object parent, Object child) {
-        if (child.equals(emptyTree)) {
+    public int getIndexOfChild(Object parent, Object child)
+    {
+        if (child.equals(emptyTree))
+        {
             return 0;
         }
 
-        if (isLeaf(child)) {
-            for (int i = 0; i < ((FileClass) parent).associatedTags.size(); i++) {
-                if (((String) child).equals(((FileClass) parent).associatedTags.get(i))) {
+        if (isLeaf(child))
+        {
+            for (int i = 0; i < ((FileClass) parent).associatedTags.size(); i++)
+            {
+                if (((String) child).equals(((FileClass) parent).associatedTags.get(i)))
+                {
                     return i;
                 }
             }
-        } else {
-            for (int i = 0; i < Files.size(); i++) {
-                if (((FileClass) child).equals(Files.get(i))) {
+        }
+        else
+        {
+            for (int i = 0; i < Files.size(); i++)
+            {
+                if (((FileClass) child).equals(Files.get(i)))
+                {
                     return i;
                 }
             }
@@ -109,15 +158,18 @@ public class FileModelTree implements TreeModel {
         return -1;
     }
 
-    public void valueForPathChanged(TreePath path, Object newValue) {
+    public void valueForPathChanged(TreePath path, Object newValue)
+    {
 
     }
 
-    public void addTreeModelListener(TreeModelListener l) {
+    public void addTreeModelListener(TreeModelListener l)
+    {
 
     }
 
-    public void removeTreeModelListener(TreeModelListener l) {
+    public void removeTreeModelListener(TreeModelListener l)
+    {
 
     }
 

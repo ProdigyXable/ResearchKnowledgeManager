@@ -14,15 +14,19 @@ import javax.swing.JComponent;
 import javax.swing.KeyStroke;
 
 /**
+ * Confirms if the user really wants to wipe all of the system's locally stored
+ * data
  *
  * @author Xable Enterprises
  */
-public class ConfirmationDialog extends javax.swing.JDialog {
+public class ConfirmationDialog extends javax.swing.JDialog
+{
 
     /**
      * A return status code - returned if Cancel button has been pressed
      */
     public static final int RET_CANCEL = 0;
+
     /**
      * A return status code - returned if OK button has been pressed
      */
@@ -30,8 +34,12 @@ public class ConfirmationDialog extends javax.swing.JDialog {
 
     /**
      * Creates new form ConfirmationDialog
+     *
+     * @param parent parent component for the dialog box
+     * @param modal determines the modal status of the dialog box
      */
-    public ConfirmationDialog(java.awt.Frame parent, boolean modal) {
+    public ConfirmationDialog(java.awt.Frame parent, boolean modal)
+    {
         super(parent, modal);
         initComponents();
 
@@ -40,21 +48,26 @@ public class ConfirmationDialog extends javax.swing.JDialog {
         InputMap inputMap = getRootPane().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), cancelName);
         ActionMap actionMap = getRootPane().getActionMap();
-        actionMap.put(cancelName, new AbstractAction() {
-            public void actionPerformed(ActionEvent e) {
+        actionMap.put(cancelName, new AbstractAction()
+        {
+            public void actionPerformed(ActionEvent e)
+            {
                 doClose(RET_CANCEL);
             }
+
         });
     }
 
-    ConfirmationDialog() {
+    ConfirmationDialog()
+    {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     /**
      * @return the return status of this dialog - one of RET_OK or RET_CANCEL
      */
-    public int getReturnStatus() {
+    public int getReturnStatus()
+    {
         return returnStatus;
     }
 
@@ -153,12 +166,15 @@ public class ConfirmationDialog extends javax.swing.JDialog {
 
     /**
      * Closes the dialog
+     *
+     * @param evt A window close event (or null)
      */
     private void closeDialog(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_closeDialog
         doClose(RET_CANCEL);
     }//GEN-LAST:event_closeDialog
 
-    private void doClose(int retStatus) {
+    private void doClose(int retStatus)
+    {
         returnStatus = retStatus;
         setVisible(false);
         dispose();
@@ -172,4 +188,5 @@ public class ConfirmationDialog extends javax.swing.JDialog {
     // End of variables declaration//GEN-END:variables
 
     private int returnStatus = RET_CANCEL;
+
 }

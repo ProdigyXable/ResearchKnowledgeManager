@@ -31,6 +31,9 @@
           </Border>
         </Property>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="removeTagFromFileButtonActionPerformed"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JButton" name="removeFileFromTagButton">
       <Properties>
@@ -139,13 +142,17 @@
         <Property name="useNullLayout" type="boolean" value="true"/>
       </Layout>
       <SubComponents>
-        <MenuItem class="javax.swing.JMenuItem" name="OpenFillePopupMenuItem">
+        <MenuItem class="javax.swing.JMenuItem" name="OpenFilePopupMenuItem">
           <Properties>
             <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
               <Font name="Verdana" size="10" style="0"/>
             </Property>
             <Property name="text" type="java.lang.String" value="Open/Launch File"/>
+            <Property name="toolTipText" type="java.lang.String" value="Opens each selected file with the system&apos;s default application"/>
           </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="OpenFilePopupMenuItemActionPerformed"/>
+          </Events>
         </MenuItem>
         <MenuItem class="javax.swing.JMenuItem" name="RootFolderPopupMenuItem">
           <Properties>
@@ -153,15 +160,25 @@
               <Font name="Verdana" size="10" style="0"/>
             </Property>
             <Property name="text" type="java.lang.String" value="Open File&apos;s Parent Folder"/>
+            <Property name="toolTipText" type="java.lang.String" value="Open&apos;s the root folder in Windows Explorer for each selected file"/>
           </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RootFolderPopupMenuItemActionPerformed"/>
+          </Events>
         </MenuItem>
         <MenuItem class="javax.swing.JMenuItem" name="TagFilePopupMenuItem">
           <Properties>
             <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
               <Font name="Verdana" size="10" style="0"/>
             </Property>
-            <Property name="text" type="java.lang.String" value="Tag File"/>
+            <Property name="text" type="java.lang.String" value="Tag File(s)"/>
+            <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+              <Connection code="&quot;Tags the selected files with the tags selected under \&quot;&quot; + this.tagSearchListName + &quot;\&quot; window&quot;" type="code"/>
+            </Property>
           </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="TagFilePopupMenuItemActionPerformed"/>
+          </Events>
         </MenuItem>
       </SubComponents>
     </Container>
@@ -194,10 +211,13 @@
             </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="openHelpDocumentMenuIte0">
               <Properties>
+                <Property name="accelerator" type="javax.swing.KeyStroke" editor="org.netbeans.modules.form.editors.KeyStrokeEditor">
+                  <KeyStroke key="F1"/>
+                </Property>
                 <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
                   <Font name="Verdana" size="10" style="0"/>
                 </Property>
-                <Property name="text" type="java.lang.String" value="Open Help Document"/>
+                <Property name="text" type="java.lang.String" value="Open System Document"/>
               </Properties>
             </MenuItem>
             <MenuItem class="javax.swing.JPopupMenu$Separator" name="jSeparator2">
@@ -246,6 +266,7 @@
                   <Font name="Verdana" size="10" style="0"/>
                 </Property>
                 <Property name="text" type="java.lang.String" value="Automatically Tag Files"/>
+                <Property name="enabled" type="boolean" value="false"/>
               </Properties>
             </MenuItem>
           </SubComponents>
@@ -265,6 +286,7 @@
                 </Property>
                 <Property name="text" type="java.lang.String" value="Initiate Search Query"/>
                 <Property name="actionCommand" type="java.lang.String" value="initiateSearchQuery"/>
+                <Property name="enabled" type="boolean" value="false"/>
               </Properties>
             </MenuItem>
           </SubComponents>
@@ -315,6 +337,7 @@
     <Property name="cursor" type="java.awt.Cursor" editor="org.netbeans.modules.form.editors2.CursorEditor">
       <Color id="Default Cursor"/>
     </Property>
+    <Property name="enabled" type="boolean" value="false"/>
     <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
       <Dimension value="[1280, 700]"/>
     </Property>
@@ -359,7 +382,7 @@
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
-                      <Component id="statusMessageScrollPane" min="-2" pref="660" max="-2" attributes="0"/>
+                      <Component id="statusMessageScrollPane" min="-2" pref="761" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="PrimaryActionPanel" max="32767" attributes="0"/>
@@ -405,6 +428,7 @@
   <SubComponents>
     <Container class="javax.swing.JTabbedPane" name="TabbedPane">
       <Properties>
+        <Property name="doubleBuffered" type="boolean" value="true"/>
         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
           <Font name="Verdana" size="12" style="0"/>
         </Property>
@@ -413,9 +437,77 @@
       <Events>
         <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="TabbedPaneStateChanged"/>
       </Events>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="4"/>
+      </AuxValues>
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout"/>
       <SubComponents>
+        <Container class="javax.swing.JPanel" name="welcomePanel">
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="4"/>
+          </AuxValues>
+          <Constraints>
+            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
+              <JTabbedPaneConstraints tabName="Start">
+                <Property name="tabTitle" type="java.lang.String" value="Start"/>
+              </JTabbedPaneConstraints>
+            </Constraint>
+          </Constraints>
+
+          <Layout class="org.netbeans.modules.form.compat2.layouts.DesignGridLayout">
+            <Property name="columns" type="int" value="1"/>
+            <Property name="rows" type="int" value="0"/>
+          </Layout>
+          <SubComponents>
+            <Container class="javax.swing.JScrollPane" name="jScrollPane1">
+              <AuxValues>
+                <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
+              </AuxValues>
+
+              <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+              <SubComponents>
+                <Component class="javax.swing.JTextArea" name="welcomeTextArea">
+                  <Properties>
+                    <Property name="editable" type="boolean" value="false"/>
+                    <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                      <Color blue="f1" green="f1" red="f1" type="rgb"/>
+                    </Property>
+                    <Property name="columns" type="int" value="20"/>
+                    <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                      <Font name="Verdana" size="12" style="0"/>
+                    </Property>
+                    <Property name="lineWrap" type="boolean" value="true"/>
+                    <Property name="rows" type="int" value="5"/>
+                    <Property name="text" type="java.lang.String" value="Welcome to the Research Knowledge Manager!&#xa;&#xa;The Research Knowledge Manager assists with managing a file database. With the ResearchKnowledgeManager, you can associate tags with files and perform search results on the tags.&#xa;&#xa;If have you any question&apos;s on how to use the system, press F1 or go to &quot;System&quot; &gt; &quot;Open System  Manual&quot; and the system&apos;s technical manual (PDF) will open."/>
+                    <Property name="wrapStyleWord" type="boolean" value="true"/>
+                    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                      <Border info="org.netbeans.modules.form.compat2.border.CompoundBorderInfo">
+                        <CompoundBorder>
+                          <Border PropertyName="outside" info="org.netbeans.modules.form.compat2.border.EtchedBorderInfo">
+                            <EtchetBorder bevelType="0"/>
+                          </Border>
+                          <Border PropertyName="inside" info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
+                            <EmptyBorder bottom="8" left="8" right="8" top="8"/>
+                          </Border>
+                        </CompoundBorder>
+                      </Border>
+                    </Property>
+                    <Property name="disabledTextColor" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                      <Color blue="0" green="0" red="0" type="rgb"/>
+                    </Property>
+                    <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+                      <Insets value="[8, 8, 8, 8]"/>
+                    </Property>
+                    <Property name="name" type="java.lang.String" value="" noResource="true"/>
+                  </Properties>
+                </Component>
+              </SubComponents>
+            </Container>
+            <Component class="javax.swing.JSeparator" name="jSeparator3">
+            </Component>
+          </SubComponents>
+        </Container>
         <Container class="javax.swing.JScrollPane" name="FileExplorerTreePane">
           <AuxValues>
             <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
@@ -764,10 +856,11 @@
               <Border info="org.netbeans.modules.form.compat2.border.CompoundBorderInfo">
                 <CompoundBorder>
                   <Border PropertyName="outside" info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
-                    <TitledBorder justification="2" title="Tag Query Terms">
+                    <TitledBorder justification="2" title="&lt;User Code&gt;">
                       <Border PropertyName="innerBorder" info="org.netbeans.modules.form.compat2.border.EtchedBorderInfo">
                         <EtchetBorder bevelType="0"/>
                       </Border>
+                      <Connection PropertyName="titleX" code="this.tagSearchListName" type="code"/>
                       <Font PropertyName="font" name="Verdana" size="10" style="0"/>
                     </TitledBorder>
                   </Border>
@@ -797,6 +890,7 @@
                 <Property name="model" type="javax.swing.ListModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
                   <Connection code="this.TagItemListModel" type="code"/>
                 </Property>
+                <Property name="toolTipText" type="java.lang.String" value="The list of tags currently in the system. You can select or deselect multiple tags by holding &quot;Shift&quot; or &quot;Control&quot;"/>
               </Properties>
               <BindingProperties>
                 <BindingProperty name="enabled" source="mainPanel" sourcePath="${enabled}" target="TagItemSearchList" targetPath="enabled" updateStrategy="1" immediately="false"/>
@@ -865,6 +959,7 @@
         <Component class="javax.swing.JButton" name="StartSearchButton">
           <Properties>
             <Property name="text" type="java.lang.String" value="Perform Search"/>
+            <Property name="toolTipText" type="java.lang.String" value="Searches for files with the specified tags and/or keywords"/>
             <Property name="actionCommand" type="java.lang.String" value=""/>
             <Property name="alignmentX" type="float" value="0.5"/>
             <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
@@ -889,10 +984,11 @@
               <Border info="org.netbeans.modules.form.compat2.border.CompoundBorderInfo">
                 <CompoundBorder>
                   <Border PropertyName="outside" info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
-                    <TitledBorder justification="2" title="Search Results">
+                    <TitledBorder justification="2" title="&lt;User Code&gt;">
                       <Border PropertyName="innerBorder" info="org.netbeans.modules.form.compat2.border.EtchedBorderInfo">
                         <EtchetBorder bevelType="0"/>
                       </Border>
+                      <Connection PropertyName="titleX" code="this.searchResultsName" type="code"/>
                       <Font PropertyName="font" name="Verdana" size="10" style="0"/>
                     </TitledBorder>
                   </Border>
@@ -920,6 +1016,7 @@
                 <Property name="model" type="javax.swing.ListModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
                   <Connection code="new DefaultListModel()" type="code"/>
                 </Property>
+                <Property name="toolTipText" type="java.lang.String" value="The list of files returned by the most recent search query"/>
                 <Property name="componentPopupMenu" type="javax.swing.JPopupMenu" editor="org.netbeans.modules.form.ComponentChooserEditor">
                   <ComponentRef name="SearchResultsPopupMenu"/>
                 </Property>

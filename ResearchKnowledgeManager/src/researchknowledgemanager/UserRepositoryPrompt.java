@@ -6,25 +6,40 @@
 package researchknowledgemanager;
 
 /**
+ * This class contains all the necessary items to prompt the user for a valid
+ * repository folder input
  *
  * @author Xable Enterprises
  */
-public class UserRepositoryPrompt extends javax.swing.JDialog {
+public class UserRepositoryPrompt extends javax.swing.JDialog
+{
 
     String userInput;
+
     boolean successfulExit = false;
 
     /**
      * Creates new form UserRepositoryPrompt
+     *
+     * @param parent the parent component
+     * @param modal determines the modal status of the dialog box
+     * @param path The current repository path of the system
      */
-    public UserRepositoryPrompt(java.awt.Frame parent, boolean modal, String path) {
+    public UserRepositoryPrompt(java.awt.Frame parent, boolean modal, String path)
+    {
         super(parent, modal);
         userInput = "";
         initComponents();
-        if (path != null) {
-            currentRepFolder.setText("Current repository folder path:    " + path);
-        } else if (path == null) {
-            currentRepFolder.setText("No repository folder specified yet...");
+        if (path != null)
+        {
+            currentRepFolder.setText("Current repository folder path:  " + path);
+        }
+        else
+        {
+            if (path == null)
+            {
+                currentRepFolder.setText("No repository folder specified yet...");
+            }
         }
         setVisible(true);
     }
@@ -36,7 +51,8 @@ public class UserRepositoryPrompt extends javax.swing.JDialog {
      */
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
-    private void initComponents() {
+    private void initComponents()
+    {
 
         UserInput = new javax.swing.JTextField();
         javax.swing.JButton SubmitButton = new javax.swing.JButton();
@@ -49,93 +65,102 @@ public class UserRepositoryPrompt extends javax.swing.JDialog {
         setTitle("Repository Folder Path?");
         setResizable(false);
         setType(java.awt.Window.Type.UTILITY);
-        addWindowListener(new java.awt.event.WindowAdapter() {
-            public void windowClosing(java.awt.event.WindowEvent evt) {
+        addWindowListener(new java.awt.event.WindowAdapter()
+        {
+            public void windowClosing(java.awt.event.WindowEvent evt)
+            {
                 formWindowClosing(evt);
             }
         });
 
         UserInput.setFont(new java.awt.Font("Verdana", 0, 12)); // NOI18N
-        UserInput.setToolTipText("Filepath of the repository folder. This file path should end in a '\\' such as C:\\My\\Folder\\Path\\");
-            UserInput.setBorder(javax.swing.BorderFactory.createEtchedBorder(javax.swing.border.EtchedBorder.RAISED));
-            UserInput.addActionListener(new java.awt.event.ActionListener() {
-                public void actionPerformed(java.awt.event.ActionEvent evt) {
-                    UserInputActionPerformed(evt);
-                }
-            });
+        UserInput.setToolTipText("File path of the repository folder.");
+        UserInput.setBorder(javax.swing.BorderFactory.createEtchedBorder(javax.swing.border.EtchedBorder.RAISED));
+        UserInput.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                UserInputActionPerformed(evt);
+            }
+        });
 
-            SubmitButton.setFont(new java.awt.Font("Verdana", 1, 12)); // NOI18N
-            SubmitButton.setText("Submit");
-            SubmitButton.setAlignmentX(0.5F);
-            SubmitButton.addActionListener(new java.awt.event.ActionListener() {
-                public void actionPerformed(java.awt.event.ActionEvent evt) {
-                    SubmitButtonActionPerformed(evt);
-                }
-            });
+        SubmitButton.setFont(new java.awt.Font("Verdana", 1, 12)); // NOI18N
+        SubmitButton.setText("Submit");
+        SubmitButton.setAlignmentX(0.5F);
+        SubmitButton.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                SubmitButtonActionPerformed(evt);
+            }
+        });
 
-            CancelButton.setFont(new java.awt.Font("Verdana", 1, 12)); // NOI18N
-            CancelButton.setText("Cancel");
-            CancelButton.addActionListener(new java.awt.event.ActionListener() {
-                public void actionPerformed(java.awt.event.ActionEvent evt) {
-                    CancelButtonActionPerformed(evt);
-                }
-            });
+        CancelButton.setFont(new java.awt.Font("Verdana", 1, 12)); // NOI18N
+        CancelButton.setText("Cancel");
+        CancelButton.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                CancelButtonActionPerformed(evt);
+            }
+        });
 
-            currentRepFolder.setFont(new java.awt.Font("Verdana", 3, 12)); // NOI18N
-            currentRepFolder.setText("[Dynamic text that will be changed during runtime]");
-            currentRepFolder.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createEtchedBorder(javax.swing.border.EtchedBorder.RAISED), javax.swing.BorderFactory.createEmptyBorder(4, 4, 4, 4)));
+        currentRepFolder.setFont(new java.awt.Font("Verdana", 3, 12)); // NOI18N
+        currentRepFolder.setText("[Dynamic text that will be changed during runtime]");
+        currentRepFolder.setToolTipText("");
+        currentRepFolder.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createEtchedBorder(javax.swing.border.EtchedBorder.RAISED), javax.swing.BorderFactory.createEmptyBorder(4, 4, 4, 4)));
 
-            jScrollPane2.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createEtchedBorder(javax.swing.border.EtchedBorder.RAISED), javax.swing.BorderFactory.createEmptyBorder(4, 4, 4, 4)));
+        jScrollPane2.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createEtchedBorder(javax.swing.border.EtchedBorder.RAISED), javax.swing.BorderFactory.createEmptyBorder(4, 4, 4, 4)));
 
-            jTextPane1.setEditable(false);
-            jTextPane1.setBorder(null);
-            jTextPane1.setFont(new java.awt.Font("Verdana", 0, 12)); // NOI18N
-            jTextPane1.setText("The repository folder should be the parent directory which contains all of the files you wish to tag. Specify the repository folder path for the system, then click the \"Submit\" button.\n\nValid Examples:\n- A:\\ \n- B:\\MyFolder\\ \n- C:\\My\\Really\\Extremely\\Long\\Folder\\Path\\Here\\");
-                jTextPane1.setOpaque(false);
-                jScrollPane2.setViewportView(jTextPane1);
+        jTextPane1.setEditable(false);
+        jTextPane1.setBorder(null);
+        jTextPane1.setFont(new java.awt.Font("Verdana", 0, 12)); // NOI18N
+        jTextPane1.setText("The repository folder should be the parent directory which contains all of the files you wish to tag. Specify the repository folder path for the system, then click the \"Submit\" button.\n\nValid Examples:\n- A:\\ \n- B:\\MyFolder\\ \n- C:\\My\\Really\\Extremely\\Long\\Folder\\Path\\Here\\");
+            jTextPane1.setOpaque(false);
+            jScrollPane2.setViewportView(jTextPane1);
 
-                javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
-                getContentPane().setLayout(layout);
-                layout.setHorizontalGroup(
-                    layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addContainerGap()
-                                .addComponent(UserInput))
-                            .addGroup(layout.createSequentialGroup()
-                                .addGap(67, 67, 67)
-                                .addComponent(SubmitButton, javax.swing.GroupLayout.PREFERRED_SIZE, 256, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 205, Short.MAX_VALUE)
-                                .addComponent(CancelButton, javax.swing.GroupLayout.PREFERRED_SIZE, 256, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(54, 54, 54))
-                            .addGroup(layout.createSequentialGroup()
-                                .addContainerGap()
-                                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
-                            .addGroup(layout.createSequentialGroup()
-                                .addContainerGap()
-                                .addComponent(currentRepFolder, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                        .addContainerGap())
-                );
-                layout.setVerticalGroup(
-                    layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 98, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 12, Short.MAX_VALUE)
-                        .addComponent(currentRepFolder)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(UserInput, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(3, 3, 3)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(SubmitButton)
-                            .addComponent(CancelButton))
-                        .addGap(6, 6, 6))
-                );
+            javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+            getContentPane().setLayout(layout);
+            layout.setHorizontalGroup(
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createSequentialGroup()
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createSequentialGroup()
+                            .addContainerGap()
+                            .addComponent(UserInput))
+                        .addGroup(layout.createSequentialGroup()
+                            .addGap(67, 67, 67)
+                            .addComponent(SubmitButton, javax.swing.GroupLayout.PREFERRED_SIZE, 256, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 205, Short.MAX_VALUE)
+                            .addComponent(CancelButton, javax.swing.GroupLayout.PREFERRED_SIZE, 256, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGap(54, 54, 54))
+                        .addGroup(layout.createSequentialGroup()
+                            .addContainerGap()
+                            .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
+                        .addGroup(layout.createSequentialGroup()
+                            .addContainerGap()
+                            .addComponent(currentRepFolder, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .addContainerGap())
+            );
+            layout.setVerticalGroup(
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 98, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 12, Short.MAX_VALUE)
+                    .addComponent(currentRepFolder)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                    .addComponent(UserInput, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGap(3, 3, 3)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(SubmitButton)
+                        .addComponent(CancelButton))
+                    .addGap(6, 6, 6))
+            );
 
-                pack();
-                setLocationRelativeTo(null);
-            }// </editor-fold>//GEN-END:initComponents
+            pack();
+            setLocationRelativeTo(null);
+        }// </editor-fold>//GEN-END:initComponents
 
     private void UserInputActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_UserInputActionPerformed
         // TODO add your handling code here:
@@ -157,7 +182,8 @@ public class UserRepositoryPrompt extends javax.swing.JDialog {
         userInput = "";
     }//GEN-LAST:event_formWindowClosing
 
-    protected void exitPrompt() {
+    protected void exitPrompt()
+    {
         userInput = this.UserInput.getText();
         setVisible(false);
         dispose();
@@ -170,4 +196,5 @@ public class UserRepositoryPrompt extends javax.swing.JDialog {
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTextPane jTextPane1;
     // End of variables declaration//GEN-END:variables
+
 }
