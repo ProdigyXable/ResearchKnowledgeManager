@@ -9,6 +9,9 @@
 <!-- in the project's Project Properties dialog box.-->
 <project name="ResearchKnowledgeManager" default="default" basedir=".">
     <description>Builds, tests, and runs the project ResearchKnowledgeManager.</description>
+<target name="-post-compile">
+    <copy file="Research Knowledge Manager Instructional Manual.pdf" todir="${dist.dir}"/>        
+</target>
     <import file="nbproject/build-impl.xml"/>
     <!--
 

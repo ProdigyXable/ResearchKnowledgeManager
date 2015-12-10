@@ -40,7 +40,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace min="-2" pref="67" max="-2" attributes="0"/>
                       <Component id="SubmitButton" min="-2" pref="256" max="-2" attributes="0"/>
-                      <EmptySpace pref="205" max="32767" attributes="0"/>
+                      <EmptySpace max="32767" attributes="0"/>
                       <Component id="CancelButton" min="-2" pref="256" max="-2" attributes="0"/>
                       <EmptySpace min="-2" pref="54" max="-2" attributes="0"/>
                   </Group>
@@ -61,8 +61,8 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="1" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="jScrollPane2" min="-2" pref="98" max="-2" attributes="0"/>
-              <EmptySpace pref="12" max="32767" attributes="0"/>
+              <Component id="jScrollPane2" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="32767" attributes="0"/>
               <Component id="currentRepFolder" min="-2" max="-2" attributes="0"/>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Component id="UserInput" min="-2" max="-2" attributes="0"/>
@@ -171,7 +171,7 @@
             <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
               <Font name="Verdana" size="12" style="0"/>
             </Property>
-            <Property name="text" type="java.lang.String" value="The repository folder should be the parent directory which contains all of the files you wish to tag. Specify the repository folder path for the system, then click the &quot;Submit&quot; button.&#xa;&#xa;Valid Examples:&#xa;- A:\u005c &#xa;- B:\u005cMyFolder\u005c &#xa;- C:\u005cMy\u005cReally\u005cExtremely\u005cLong\u005cFolder\u005cPath\u005cHere\u005c" containsInvalidXMLChars="true"/>
+            <Property name="text" type="java.lang.String" value="The repository folder should be the parent directory which contains all of the files you wish to tag.&#xa;Specify the repository folder path for the system, then click the &quot;Submit&quot; button.&#xa;&#xa;Valid Examples:&#xa;- A:\u005c &#xa;- B:\u005cMyFolder\u005c &#xa;- C:\u005cMy\u005cReally\u005cExtremely\u005cLong\u005cFolder\u005cPath\u005cHere\u005c" containsInvalidXMLChars="true"/>
             <Property name="opaque" type="boolean" value="false"/>
           </Properties>
         </Component>

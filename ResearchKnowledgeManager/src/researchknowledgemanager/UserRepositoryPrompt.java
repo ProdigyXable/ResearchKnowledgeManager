@@ -115,7 +115,7 @@ public class UserRepositoryPrompt extends javax.swing.JDialog
         jTextPane1.setEditable(false);
         jTextPane1.setBorder(null);
         jTextPane1.setFont(new java.awt.Font("Verdana", 0, 12)); // NOI18N
-        jTextPane1.setText("The repository folder should be the parent directory which contains all of the files you wish to tag. Specify the repository folder path for the system, then click the \"Submit\" button.\n\nValid Examples:\n- A:\\ \n- B:\\MyFolder\\ \n- C:\\My\\Really\\Extremely\\Long\\Folder\\Path\\Here\\");
+        jTextPane1.setText("The repository folder should be the parent directory which contains all of the files you wish to tag.\nSpecify the repository folder path for the system, then click the \"Submit\" button.\n\nValid Examples:\n- A:\\ \n- B:\\MyFolder\\ \n- C:\\My\\Really\\Extremely\\Long\\Folder\\Path\\Here\\");
             jTextPane1.setOpaque(false);
             jScrollPane2.setViewportView(jTextPane1);
 
@@ -131,7 +131,7 @@ public class UserRepositoryPrompt extends javax.swing.JDialog
                         .addGroup(layout.createSequentialGroup()
                             .addGap(67, 67, 67)
                             .addComponent(SubmitButton, javax.swing.GroupLayout.PREFERRED_SIZE, 256, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 205, Short.MAX_VALUE)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(CancelButton, javax.swing.GroupLayout.PREFERRED_SIZE, 256, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGap(54, 54, 54))
                         .addGroup(layout.createSequentialGroup()
@@ -146,8 +146,8 @@ public class UserRepositoryPrompt extends javax.swing.JDialog
                 layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                     .addContainerGap()
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 98, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 12, Short.MAX_VALUE)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(currentRepFolder)
                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                     .addComponent(UserInput, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
