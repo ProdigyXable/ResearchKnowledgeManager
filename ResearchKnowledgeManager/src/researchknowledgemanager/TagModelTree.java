@@ -62,13 +62,13 @@ public class TagModelTree implements TreeModel
             if (parent.getClass() == TagClass.class)
             {
 
-                for (int i = 0; i < Tags.size(); i++)
+                for (TagClass Tag : Tags)
                 {
-                    if (Tags.get(i) == parent)
+                    if (Tag == parent)
                     {
-                        if (Tags.get(i).associatedFiles.size() > 0)
+                        if (Tag.associatedFiles.size() > 0)
                         {
-                            return Tags.get(i).associatedFiles.get(index);
+                            return Tag.associatedFiles.get(index);
                         }
                         else
                         {
@@ -100,11 +100,11 @@ public class TagModelTree implements TreeModel
         {
             if (parent.getClass() == TagClass.class)
             {
-                for (int i = 0; i < Tags.size(); i++)
+                for (TagClass Tag : Tags)
                 {
-                    if (Tags.get(i) == parent)
+                    if (Tag == parent)
                     {
-                        return max(Tags.get(i).associatedFiles.size(), 1);
+                        return max(Tag.associatedFiles.size(), 1);
                     }
                 }
             }

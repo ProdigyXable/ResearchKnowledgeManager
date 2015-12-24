@@ -62,13 +62,13 @@ public class FileModelTree implements TreeModel
             if (parent.getClass() == FileClass.class)
             {
 
-                for (int i = 0; i < Files.size(); i++)
+                for (FileClass File : Files)
                 {
-                    if (Files.get(i) == parent)
+                    if (File == parent)
                     {
-                        if (Files.get(i).associatedTags.size() > 0)
+                        if (File.associatedTags.size() > 0)
                         {
-                            return Files.get(i).associatedTags.get(index);
+                            return File.associatedTags.get(index);
                         }
                         else
                         {
@@ -101,11 +101,11 @@ public class FileModelTree implements TreeModel
         {
             if (parent.getClass() == FileClass.class)
             {
-                for (int i = 0; i < Files.size(); i++)
+                for (FileClass File : Files)
                 {
-                    if (Files.get(i) == parent)
+                    if (File == parent)
                     {
-                        return max(Files.get(i).associatedTags.size(), 1);
+                        return max(File.associatedTags.size(), 1);
                     }
                 }
             }

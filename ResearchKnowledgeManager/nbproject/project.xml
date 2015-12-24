@@ -6,6 +6,7 @@
             <name>ResearchKnowledgeManager</name>
             <source-roots>
                 <root id="src.dir"/>
+                <root id="src.apachepoi.dir"/>
             </source-roots>
             <test-roots>
                 <root id="test.src.dir"/>

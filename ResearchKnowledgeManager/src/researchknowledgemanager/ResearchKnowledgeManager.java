@@ -43,27 +43,27 @@ public class ResearchKnowledgeManager
     public enum activeState
     {
 
-        INACTIVE, READY, ACTIVE, PAUSED
+        INACTIVE, ACTIVE, PAUSED
 
     }
 
-    void sortTagClass(Vector<TagClass> data)
+    final void sortTagClass(Vector<TagClass> data)
     {
-        for (int i = 0; i < data.size(); i++)
+        for (TagClass data1 : data)
         {
-            data.get(i).associatedFiles.sort(null);
-            data.get(i).keywords.sort(null);
+            data1.associatedFiles.sort(null);
+            data1.keywords.sort(null);
         }
 
         data.sort(null);
         this.ui.updateTagTree();
     }
 
-    void sortFileClass(Vector<FileClass> data)
+    final void sortFileClass(Vector<FileClass> data)
     {
-        for (int i = 0; i < data.size(); i++)
+        for (FileClass data1 : data)
         {
-            data.get(i).associatedTags.sort(null);
+            data1.associatedTags.sort(null);
         }
 
         data.sort(null);
@@ -108,6 +108,8 @@ public class ResearchKnowledgeManager
      * Stores the file path of the system's repository folder.
      */
     File repositoryFolder;
+
+    Vector<FileClass> missingFiles;
 
     // Various objects used throughout the program
     /**
@@ -195,9 +197,10 @@ public class ResearchKnowledgeManager
      */
     public void saveTime() throws IOException
     {
-        FileWriter fileWrite = new FileWriter(dataDirectory.getAbsolutePath() + "\\" + this.lastModifiedFileName, false);
-        fileWrite.write(Long.toString(this.lastOpened));
-        fileWrite.close();
+        try (FileWriter fileWrite = new FileWriter(dataDirectory.getAbsolutePath() + "\\" + this.lastModifiedFileName, false))
+        {
+            fileWrite.write(Long.toString(this.lastOpened));
+        }
 
         if (this.debug)
         {
@@ -219,10 +222,10 @@ public class ResearchKnowledgeManager
         if (this.repositoryFolder.exists() && this.repositoryFolder.isDirectory())
         {
 
-            FileWriter saveRepo = new FileWriter(this.dataDirectory.getAbsoluteFile() + "\\" + this.repoFileName);
-
-            saveRepo.write(this.repositoryFolder.getAbsolutePath());
-            saveRepo.close();
+            try (FileWriter saveRepo = new FileWriter(this.dataDirectory.getAbsoluteFile() + "\\" + this.repoFileName))
+            {
+                saveRepo.write(this.repositoryFolder.getAbsolutePath());
+            }
 
             if (this.debug)
             {
@@ -251,14 +254,15 @@ public class ResearchKnowledgeManager
     {
         String buffer = "";
 
-        for (int i = 0; i < Tags.size(); i++)
+        for (TagClass Tag : Tags)
         {
-            buffer += Tags.get(i).toStringSpecial(this.fileIndexer.indexParseDelimiter);
+            buffer += Tag.toStringSpecial(this.fileIndexer.indexParseDelimiter);
         }
 
-        FileWriter fileWrite = new FileWriter(dataDirectory.getAbsolutePath() + "\\" + this.tagDataFileName);
-        fileWrite.write(buffer);
-        fileWrite.close();
+        try (FileWriter fileWrite = new FileWriter(dataDirectory.getAbsolutePath() + "\\" + this.tagDataFileName))
+        {
+            fileWrite.write(buffer);
+        }
     }
 
     /**
@@ -275,7 +279,7 @@ public class ResearchKnowledgeManager
         ui.newMessage("Searching for tag data. This may take a while...");
 
         File tagDataFile = new File(this.dataDirectory.getAbsolutePath() + "\\" + this.tagDataFileName);
-        String fileData = "";
+        String fileData;
         // Executes when the relevant time file does not exist
         if (!tagDataFile.exists())
         {
@@ -288,60 +292,59 @@ public class ResearchKnowledgeManager
             try
             {
 
-                FileReader tagDataFileReader = new FileReader(tagDataFile);
-                if (tagDataFile.length() > 0)
+                try (FileReader tagDataFileReader = new FileReader(tagDataFile))
                 {
-                    char[] tagDataArray = new char[(int) tagDataFile.length()];
-
-                    tagDataFileReader.read(tagDataArray);
-                    fileData = String.copyValueOf(tagDataArray);
-
-                    // Data input parsing begins here
-                    String[] candidates = fileData.split("Tag: ");
-
-                    if (debug)
+                    if (tagDataFile.length() > 0)
                     {
-                        System.err.println("Possible saved tags: " + candidates.length);
-                    }
+                        char[] tagDataArray = new char[(int) tagDataFile.length()];
 
-                    // Contains all the possible tags in the system
-                    for (int i = 0; i < candidates.length - 1; i++)
-                    {
+                        tagDataFileReader.read(tagDataArray);
+                        fileData = String.copyValueOf(tagDataArray);
 
-                        // Splits string into before/after keywords
-                        String[] dataSplit = candidates[i + 1].split("\\" + this.fileIndexer.indexParseDelimiter + "keywords\\" + this.fileIndexer.indexParseDelimiter);
+                        // Data input parsing begins here
+                        String[] candidates = fileData.split("Tag: ");
 
-                        // Splits string into before keyword section into filenames
-                        String[] confirmedFiles = dataSplit[0].split("\\" + this.fileIndexer.indexParseDelimiter);
-                        this.addTagClass(new TagClass(confirmedFiles[0], this));
-
-                        for (int k = 0; k < confirmedFiles.length - 1; k++)
+                        if (debug)
                         {
-                            this.Tags.get(this.Tags.size() - 1).addFiles(confirmedFiles[k + 1]);
+                            System.err.println("Possible saved tags: " + candidates.length);
                         }
 
-                        if (dataSplit.length > 1)
+                        // Contains all the possible tags in the system
+                        for (int i = 0; i < candidates.length - 1; i++)
                         {
-                            confirmedFiles = dataSplit[1].split("\\" + this.fileIndexer.indexParseDelimiter);
-                            this.Tags.get(this.Tags.size() - 1).addKeywords(confirmedFiles);
-                        }
 
+                            // Splits string into before/after keywords
+                            String[] dataSplit = candidates[i + 1].split("\\" + this.fileIndexer.indexParseDelimiter + "keywords\\" + this.fileIndexer.indexParseDelimiter);
+
+                            // Splits string into before keyword section into filenames
+                            String[] confirmedFiles = dataSplit[0].split("\\" + this.fileIndexer.indexParseDelimiter);
+                            this.addTagClass(new TagClass(confirmedFiles[0], this));
+
+                            for (int k = 0; k < confirmedFiles.length - 1; k++)
+                            {
+                                this.Tags.get(this.Tags.size() - 1).addFiles(confirmedFiles[k + 1]);
+                            }
+
+                            if (dataSplit.length > 1)
+                            {
+                                confirmedFiles = dataSplit[1].split("\\" + this.fileIndexer.indexParseDelimiter);
+                                this.Tags.get(this.Tags.size() - 1).addKeywords(confirmedFiles);
+                            }
+
+                        }
+                    }
+                    try
+                    {
+                        SwingUtilities.invokeAndWait(() ->
+                        {
+                            this.ui.refreshTagItemList();
+                        });
+                    }
+                    catch (Exception ex)
+                    {
+                        System.err.println("Exception found!\n" + ex);
                     }
                 }
-                try
-                {
-                    SwingUtilities.invokeAndWait(() ->
-                    {
-                        this.ui.refreshTagItemList();
-                    });
-                }
-                catch (Exception ex)
-                {
-                    System.err.println("Exception found!\n" + ex);
-                }
-
-                tagDataFileReader.close();
-
             }
             catch (Exception ex)
             {
@@ -386,7 +389,7 @@ public class ResearchKnowledgeManager
     /**
      * Prints a status message describing the debug state of the system
      */
-    public void debugMode()
+    public final void debugMode()
     {
         if (this.debug)
         {
@@ -452,9 +455,10 @@ public class ResearchKnowledgeManager
         if (buffer.successfulExit)
         {
             this.repositoryFolder = bufferFile;
-            FileWriter saveRepo = new FileWriter(this.dataDirectory.getAbsoluteFile() + "\\" + this.repoFileName);
-            saveRepo.write(userInput);
-            saveRepo.close();
+            try (FileWriter saveRepo = new FileWriter(this.dataDirectory.getAbsoluteFile() + "\\" + this.repoFileName))
+            {
+                saveRepo.write(userInput);
+            }
 
             ui.newMessage("User input received and validated for repository folder -> " + repositoryFolder.getAbsolutePath());
             ui.newMessage(this.lineSeparator);
@@ -508,7 +512,9 @@ public class ResearchKnowledgeManager
                 {
                 }
                 while (!this.askForRepository());
+
                 this.ui.autoIndexAll();
+
                 return true;
             }
             else
@@ -518,39 +524,39 @@ public class ResearchKnowledgeManager
 
                 char[] repoFolder = new char[(int) saveDirectoryFile.length()];
 
-                FileReader saveDirectoryRead = new FileReader(saveDirectoryFile);
-                saveDirectoryRead.read(repoFolder);
-
-                String buffer = new String(repoFolder);
-                if (!buffer.equals(""))
+                try (FileReader saveDirectoryRead = new FileReader(saveDirectoryFile))
                 {
-                    this.repositoryFolder = new File(buffer);
+                    saveDirectoryRead.read(repoFolder);
 
-                    if (this.repositoryFolder.exists() && this.repositoryFolder.isDirectory())
+                    String buffer = new String(repoFolder);
+                    if (!buffer.isEmpty())
                     {
+                        this.repositoryFolder = new File(buffer);
 
-                        ui.newMessage("Successfully loaded the repository folder");
+                        if (this.repositoryFolder.exists() && this.repositoryFolder.isDirectory())
+                        {
 
+                            ui.newMessage("Successfully loaded the repository folder");
+
+                        }
+                        else
+                        {
+
+                            ui.newMessage("An invalid repository folder path was loaded! Rejecting the path!");
+
+                            repositoryFolder = null;
+                            return false;
+                        }
                     }
                     else
                     {
-
-                        ui.newMessage("An invalid repository folder path was loaded! Rejecting the path!");
-
-                        repositoryFolder = null;
-                        return false;
+                        ui.newMessage("Empty data detected... Prompting the user for input");
+                        do
+                        {
+                        }
+                        while (!this.askForRepository());
                     }
                 }
-                else
-                {
-                    ui.newMessage("Empty data detected... Prompting the user for input");
-                    do
-                    {
-                    }
-                    while (!this.askForRepository());
-                }
-
-                saveDirectoryRead.close();
                 return true;
             }
         }
@@ -659,9 +665,9 @@ public class ResearchKnowledgeManager
     {
         boolean inStatus = false;
 
-        for (int i = 0; i < Tags.size(); i++)
+        for (TagClass Tag : Tags)
         {
-            if (Tags.get(i).TagName.equals(newTagClass.TagName))
+            if (Tag.TagName.toLowerCase().trim().equals(newTagClass.TagName.toLowerCase().trim()))
             {
                 inStatus = true;
                 break;
@@ -684,11 +690,14 @@ public class ResearchKnowledgeManager
      */
     void addFileClass(FileClass newFileClass)
     {
+
         boolean inStatus = false;
 
-        for (int i = 0; i < Files.size(); i++)
+        for (FileClass File : Files)
         {
-            if (Files.get(i).FileName.equals(newFileClass.FileName))
+            // Do not use .contains()
+            // Comparisions are based solely on filename.
+            if (File.FileName.toLowerCase().trim().equals(newFileClass.FileName.toLowerCase().trim()))
             {
                 inStatus = true;
                 break;
@@ -716,19 +725,17 @@ public class ResearchKnowledgeManager
 
         Vector<FileClass> searchResults = new Vector<>();
 
-        for (int i = 0; i < Files.size(); i++)
+        for (FileClass File : Files)
         {
             boolean bufferResult = true;
-            for (int j = 0; j < inputTags.size(); j++)
+            for (TagClass inputTag : inputTags)
             {
-
                 // We can do partial tag completion if we replace &= with |=!
-                bufferResult &= Files.get(i).associatedTags.contains(inputTags.get(j).toString());
+                bufferResult &= File.associatedTags.contains(inputTag.toString());
             }
-
             if (bufferResult)
             {
-                searchResults.add(Files.get(i));
+                searchResults.add(File);
             }
         }
 
@@ -774,16 +781,14 @@ public class ResearchKnowledgeManager
      */
     public ResearchKnowledgeManager()
     {
+        this.ui = new UserInterface(this);
+        this.ui.setVisible(true);
 
-        // Only Temporary while testing the TagTreeModel
-        ui = new UserInterface(this);
-        ui.setVisible(true);
-
-        this.fileIndexer = new Indexer(this.debug, this.lastOpened, ui);
+        this.fileIndexer = new Indexer(this.debug, this.lastOpened, this.ui);
         this.debugMode();
 
         this.initializeStatus = this.initializeData();
-        ui.FileExplorerTree.setModel(new FileTreeModelTree(this.repositoryFolder));
+        this.ui.FileExplorerTree.setModel(new FileTreeModelTree(this.repositoryFolder));
 
         if (!initializeStatus)
         {
@@ -795,6 +800,25 @@ public class ResearchKnowledgeManager
             this.sortFileClass(Files);
             this.sortTagClass(Tags);
         }
+
+        this.missingFiles = new Vector<>();
+
+        for (FileClass f : this.Files)
+        {
+            File buffer = new File(f.toString());
+
+            if (!buffer.exists())
+            {
+                this.missingFiles.add(f);
+            }
+        }
+
+        if (!this.missingFiles.isEmpty())
+        {
+            this.ui.ErrorHandleFunction(missingFiles, UserInterface.ErrorType.MISSING);
+        }
+
+        this.missingFiles.clear();
     }
 
     // Not designed to recursively delete folders or items within folders
@@ -808,9 +832,9 @@ public class ResearchKnowledgeManager
         boolean status = true;
         File[] buffer = this.dataDirectory.listFiles();
 
-        for (int i = 0; i < buffer.length; i++)
+        for (File fileBuffer : buffer)
         {
-            status &= buffer[i].delete();
+            status &= fileBuffer.delete();
         }
 
         if (status)

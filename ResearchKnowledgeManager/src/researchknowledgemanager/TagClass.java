@@ -5,6 +5,7 @@
  */
 package researchknowledgemanager;
 
+import java.io.File;
 import java.util.Vector;
 
 /**
@@ -79,18 +80,21 @@ public class TagClass implements Comparable
     String toStringSpecial(String delimiter)
     {
         String buffer = "Tag: " + this.TagName;
-        for (int i = 0; i < associatedFiles.size(); i++)
+        for (String associatedFile : associatedFiles)
         {
-            buffer += delimiter + associatedFiles.get(i).toLowerCase().trim();
+            if ((new File(associatedFile)).exists())
+            {
+                buffer += delimiter + associatedFile.toLowerCase().trim();
+            }
         }
 
         if (this.keywords.size() > 0)
         {
             buffer += delimiter + "keywords";
 
-            for (int i = 0; i < keywords.size(); i++)
+            for (String keyword : keywords)
             {
-                buffer += delimiter + keywords.get(i).toLowerCase().trim();
+                buffer += delimiter + keyword.toLowerCase().trim();
             }
             buffer += System.lineSeparator();
         }
@@ -138,10 +142,9 @@ public class TagClass implements Comparable
      */
     public void addKeywords(String[] newKeywords)
     {
-
-        for (int i = 0; i < newKeywords.length; i++)
+        for (String newKeyword : newKeywords)
         {
-            addKeywords(newKeywords[i]);
+            addKeywords(newKeyword);
         }
     }
 
@@ -171,9 +174,9 @@ public class TagClass implements Comparable
     {
         this.associatedFiles.trimToSize();
 
-        for (int i = 0; i < newFiles.length; i++)
+        for (String newFile : newFiles)
         {
-            addFiles(newFiles[i]);
+            addFiles(newFile);
         }
     }
 
@@ -191,22 +194,18 @@ public class TagClass implements Comparable
             this.associatedFiles.add(newFile.toLowerCase().trim());
 
             //Search for the specified file and append a tag to it in the file class
-            for (int j = 0; j < rm.Files.size(); j++)
+            for (FileClass File : rm.Files)
             {
-
-                if (rm.Files.get(j).FileName.equals(newFile.toLowerCase().trim()))
+                if (File.FileName.equals(newFile.toLowerCase().trim()))
                 {
-
                     if (rm.debug)
                     {
                         System.err.println("Exising file found within the tag structure. Tag added to this file");
                     }
-
-                    rm.Files.get(j).addTag(this.TagName);
-                    rm.Files.get(j).associatedTags.sort(null);
+                    File.addTag(this.TagName);
+                    File.associatedTags.sort(null);
                     return;
                 }
-
             }
             rm.addFileClass(new FileClass(newFile, rm));
 
@@ -254,25 +253,21 @@ public class TagClass implements Comparable
         if (doOther)
         {
             //Search for the specified file and remove the file from the tag
-            for (int j = 0; j < rm.Files.size(); j++)
+            for (FileClass File : rm.Files)
             {
-                if (rm.Files.get(j).FileName.equals(deletedFile.toLowerCase().trim()))
+                if (File.FileName.equals(deletedFile.toLowerCase().trim()))
                 {
-
                     if (rm.debug)
                     {
                         System.err.println("Existing file found within the tag structure. Preparing to remove file...");
                     }
-
-                    rm.Files.get(j).removeTag(this.TagName, false);
-
+                    File.removeTag(this.TagName, false);
                     return status;
                 }
                 else
                 {
                     // Tag.get(j) does not match the input tagItem
                 }
-
             }
         }
 

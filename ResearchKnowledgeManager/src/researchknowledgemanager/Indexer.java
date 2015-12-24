@@ -118,12 +118,11 @@ public class Indexer
             }
             else
             {
-                for (int i = 0; i < ui.rm.Files.size(); i++)
+                for (FileClass File : ui.rm.Files)
                 {
-                    if (ui.rm.Files.get(i).toString().equals(file.toString()))
+                    if (File.toString().equals(file.toString()))
                     {
-                        ui.rm.Files.get(i).addTag(TagName.UNREADABLE);
-
+                        File.addTag(TagName.UNREADABLE);
                     }
                 }
             }
@@ -143,7 +142,7 @@ public class Indexer
      */
     boolean testReadableFileTypes(File file)
     {
-        return fileTestPDF(file) | fileTestWORD(file) | fileTestEXCEL(file) | fileTestPPT(file) | fileTestTXT(file) | fileTestXML(file) | fileTestHTML(file);
+        return fileTestPDF(file) | fileTestWORD(file) | fileTestEXCEL(file) | fileTestPPT(file) | fileTestTXT(file) | fileTestHTML(file);
     }
 
     /**
@@ -155,7 +154,7 @@ public class Indexer
     void fileTestIMAGE(File file)
     {
         String fileExtension = file.getName().split("\\.")[file.getName().split("\\.").length - 1];
-        if (fileExtension.matches("png|gif|tif|jp.*g"))
+        if (fileExtension.matches("svg|bmp|png|gif|tif(f?)|jp(e?)g"))
         {
             if (!ui.rm.Files.contains(new FileClass(file.toString(), ui.rm)))
             {
@@ -166,12 +165,11 @@ public class Indexer
             }
             else
             {
-                for (int i = 0; i < ui.rm.Files.size(); i++)
+                for (FileClass File : ui.rm.Files)
                 {
-                    if (ui.rm.Files.get(i).toString().equals(file.toString()))
+                    if (File.toString().equals(file.toString()))
                     {
-                        ui.rm.Files.get(i).addTag(TagName.IMAGE);
-
+                        File.addTag(TagName.IMAGE);
                         return;
                     }
                 }
@@ -192,7 +190,7 @@ public class Indexer
     boolean fileTestHTML(File file)
     {
         String fileExtension = file.getName().split("\\.")[file.getName().split("\\.").length - 1];
-        if (fileExtension.matches("htm.*|mht.*?"))
+        if (fileExtension.matches("htm.?|mht"))
         {
             if (!ui.rm.Files.contains(new FileClass(file.toString(), ui.rm)))
             {
@@ -205,55 +203,13 @@ public class Indexer
             }
             else
             {
-                for (int i = 0; i < ui.rm.Files.size(); i++)
+                for (FileClass File : ui.rm.Files)
                 {
-                    if (ui.rm.Files.get(i).toString().equals(file.toString()))
+                    if (File.toString().equals(file.toString()))
                     {
-                        ui.rm.Files.get(i).addTag(TagName.READABLE);
-                        ui.rm.Files.get(i).addTag(TagName.NONMICROSOFT);
-                        ui.rm.Files.get(i).addTag(TagName.HTML);
-
-                        return true;
-                    }
-                }
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Tags a file with the "XML" tag if the file has a XML extension
-     *
-     * @param file The file (must be an actual file and not a folder) that will
-     * be associated with new tags
-     *
-     * @return <b>true</b> is file is a xml file.<br><b>false</b> otherwise
-     */
-    boolean fileTestXML(File file)
-    {
-        String fileExtension = file.getName().split("\\.")[file.getName().split("\\.").length - 1];
-        if (fileExtension.matches("xml|xps"))
-        {
-            if (!ui.rm.Files.contains(new FileClass(file.toString(), ui.rm)))
-            {
-                ui.rm.addFileClass(new FileClass(file.toString(), ui.rm));
-                ui.rm.Files.get(ui.rm.Files.size() - 1).addTag(TagName.READABLE);
-                ui.rm.Files.get(ui.rm.Files.size() - 1).addTag(TagName.NONMICROSOFT);
-                ui.rm.Files.get(ui.rm.Files.size() - 1).addTag(TagName.XML);
-                return true;
-
-            }
-            else
-            {
-                for (int i = 0; i < ui.rm.Files.size(); i++)
-                {
-                    if (ui.rm.Files.get(i).toString().equals(file.toString()))
-                    {
-                        ui.rm.Files.get(i).addTag(TagName.READABLE);
-                        ui.rm.Files.get(i).addTag(TagName.NONMICROSOFT);
-                        ui.rm.Files.get(i).addTag(TagName.XML);
-
+                        File.addTag(TagName.READABLE);
+                        File.addTag(TagName.NONMICROSOFT);
+                        File.addTag(TagName.HTML);
                         return true;
                     }
                 }
@@ -287,14 +243,13 @@ public class Indexer
             }
             else
             {
-                for (int i = 0; i < ui.rm.Files.size(); i++)
+                for (FileClass File : ui.rm.Files)
                 {
-                    if (ui.rm.Files.get(i).toString().equals(file.toString()))
+                    if (File.toString().equals(file.toString()))
                     {
-                        ui.rm.Files.get(i).addTag(TagName.READABLE);
-                        ui.rm.Files.get(i).addTag(TagName.NONMICROSOFT);
-                        ui.rm.Files.get(i).addTag(TagName.TEXT);
-
+                        File.addTag(TagName.READABLE);
+                        File.addTag(TagName.NONMICROSOFT);
+                        File.addTag(TagName.TEXT);
                         return true;
                     }
                 }
@@ -323,7 +278,7 @@ public class Indexer
          * @return <b>true</b> is file is a PPT file.<br><b>false</b> otherwise
          */
         String fileExtension = file.getName().split("\\.")[file.getName().split("\\.").length - 1];
-        if (fileExtension.matches("ppt.*|pot.*"))
+        if (fileExtension.matches("ppt.?|pot.*"))
         {
             if (!ui.rm.Files.contains(new FileClass(file.toString(), ui.rm)))
             {
@@ -336,13 +291,13 @@ public class Indexer
             }
             else
             {
-                for (int i = 0; i < ui.rm.Files.size(); i++)
+                for (FileClass File : ui.rm.Files)
                 {
-                    if (ui.rm.Files.get(i).toString().equals(file.toString()))
+                    if (File.toString().equals(file.toString()))
                     {
-                        ui.rm.Files.get(i).addTag(TagName.READABLE);
-                        ui.rm.Files.get(i).addTag(TagName.MICROSOFT);
-                        ui.rm.Files.get(i).addTag(TagName.POWERPOINT);
+                        File.addTag(TagName.READABLE);
+                        File.addTag(TagName.MICROSOFT);
+                        File.addTag(TagName.POWERPOINT);
                         return true;
                     }
                 }
@@ -376,14 +331,13 @@ public class Indexer
             }
             else
             {
-                for (int i = 0; i < ui.rm.Files.size(); i++)
+                for (FileClass File : ui.rm.Files)
                 {
-                    if (ui.rm.Files.get(i).toString().equals(file.toString()))
+                    if (File.toString().equals(file.toString()))
                     {
-                        ui.rm.Files.get(i).addTag(TagName.READABLE);
-                        ui.rm.Files.get(i).addTag(TagName.MICROSOFT);
-                        ui.rm.Files.get(i).addTag(TagName.EXCEL);
-
+                        File.addTag(TagName.READABLE);
+                        File.addTag(TagName.MICROSOFT);
+                        File.addTag(TagName.EXCEL);
                         return true;
                     }
                 }
@@ -404,7 +358,7 @@ public class Indexer
     boolean fileTestWORD(File file)
     {
         String fileExtension = file.getName().split("\\.")[file.getName().split("\\.").length - 1];
-        if (fileExtension.matches("doc.*"))
+        if (fileExtension.matches("doc.?"))
         {
             if (!ui.rm.Files.contains(new FileClass(file.toString(), ui.rm)))
             {
@@ -417,14 +371,13 @@ public class Indexer
             }
             else
             {
-                for (int i = 0; i < ui.rm.Files.size(); i++)
+                for (FileClass File : ui.rm.Files)
                 {
-                    if (ui.rm.Files.get(i).toString().equals(file.toString()))
+                    if (File.toString().equals(file.toString()))
                     {
-                        ui.rm.Files.get(i).addTag(TagName.READABLE);
-                        ui.rm.Files.get(i).addTag(TagName.MICROSOFT);
-                        ui.rm.Files.get(i).addTag(TagName.WORD);
-
+                        File.addTag(TagName.READABLE);
+                        File.addTag(TagName.MICROSOFT);
+                        File.addTag(TagName.WORD);
                         return true;
                     }
                 }
@@ -453,18 +406,19 @@ public class Indexer
                 ui.rm.Files.get(ui.rm.Files.size() - 1).addTag(TagName.READABLE);
                 ui.rm.Files.get(ui.rm.Files.size() - 1).addTag(TagName.NONMICROSOFT);
                 ui.rm.Files.get(ui.rm.Files.size() - 1).addTag(TagName.PDF);
+
                 return true;
 
             }
             else
             {
-                for (int i = 0; i < ui.rm.Files.size(); i++)
+                for (FileClass File : ui.rm.Files)
                 {
-                    if (ui.rm.Files.get(i).toString().equals(file.toString()))
+                    if (File.toString().equals(file.toString()))
                     {
-                        ui.rm.Files.get(i).addTag(TagName.READABLE);
-                        ui.rm.Files.get(i).addTag(TagName.NONMICROSOFT);
-                        ui.rm.Files.get(i).addTag(TagName.PDF);
+                        File.addTag(TagName.READABLE);
+                        File.addTag(TagName.NONMICROSOFT);
+                        File.addTag(TagName.PDF);
                         return true;
                     }
                 }
@@ -695,11 +649,10 @@ public class Indexer
                     {
                         validResults += potentialNew[i].toString() + this.indexParseDelimiter;
 
-                        tagOnFileName(potentialNew[i]);
-                        rm.ui.newMessage("New file detected! ->" + potentialNew[i].toString());
-
                         // Files can be preemptively put into tags based on their file names here
                         // We can also search the content of files here if needed
+                        tagOnFileName(potentialNew[i]);
+                        rm.ui.newMessage("New file detected! ->" + potentialNew[i].toString());
                     }
                 }
                 else
@@ -747,7 +700,7 @@ public class Indexer
      */
     boolean saveIndexAll(String files, File saveDirectory)
     {
-        return saveIndexAll(files.split(this.indexParseDelimiter), saveDirectory);
+        return saveIndexAll(files.split("\\" + this.indexParseDelimiter), saveDirectory);
     }
 
     /**
@@ -769,9 +722,10 @@ public class Indexer
             String filename = saveDirectory.toString() + "\\" + indexFileName;
             indexFileWrite = new FileWriter(filename, false);
 
-            for (int i = 0; i < fileList.length; i++)
+            for (String fileList1 : fileList)
             {
-                this.indexFileWrite.write(fileList[i].toLowerCase().trim() + this.indexParseDelimiter);
+
+                this.indexFileWrite.write(fileList1.toLowerCase().trim() + this.indexParseDelimiter);
             }
 
             ui.newMessage("Indexing of all files completed");
@@ -830,7 +784,7 @@ public class Indexer
      */
     boolean saveIndexNew(String files, File saveDirectory)
     {
-        return saveIndexNew(files.split(this.indexParseDelimiter), saveDirectory);
+        return saveIndexNew(files.split("\\" + this.indexParseDelimiter), saveDirectory);
     }
 
     /**
@@ -851,9 +805,9 @@ public class Indexer
         {
             indexFileWrite = new FileWriter(saveDirectory.toString() + "\\" + indexFileName, true);
 
-            for (int i = 0; i < fileList.length; i++)
+            for (String fileList1 : fileList)
             {
-                this.indexFileWrite.write(fileList[i] + this.indexParseDelimiter);
+                this.indexFileWrite.write(fileList1 + this.indexParseDelimiter);
             }
 
             ui.newMessage("Indexing of new files completed!");

@@ -6,13 +6,17 @@
 package researchknowledgemanager;
 
 import java.awt.Desktop;
+import java.awt.Font;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import static java.lang.Integer.max;
 import static java.lang.Integer.min;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Vector;
 import javax.swing.DefaultListModel;
+import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 import javax.swing.tree.TreePath;
 
@@ -24,6 +28,43 @@ import javax.swing.tree.TreePath;
  */
 public class UserInterface extends javax.swing.JFrame
 {
+
+    private static final class StringErrorMessages
+    {
+
+        private static final String resaveErrorMessage = "Some problems have been encountered with some files so the file's contents were not processed. Usually this means the file was saved by a third-party application. \n"
+                + "\n"
+                + "Try any of the below options to resolve the issue:\n"
+                + "\n"
+                + "1. Open the file with the proper application and resave it. When resaving, choose try choosing an updated file format or save the file as a text (.txt) file.\n"
+                + "\n"
+                + "2. Remove and delete the file from the repository. When the Research Knowlege Manager encounters a missing file, you'll be given the option to remove it from the system.";
+
+        private static final String missingErrorMessage = "Below are a list of files the Research Knowledge Manager noticed were missing!\n"
+                + "\n"
+                + "These files will be completely removed from the system the next time the Research Knowledge Manager closes.";
+
+        private static final String otherErrorMessage = "Some problems have been encountered with some files. The Research Knowledge Manager could not pinpoint any specific issues with the file. \n"
+                + "As such, the file's contents were not processed. These files may or may not fit your search query.\n "
+                + "\n"
+                + "Try any of the below options to resolve the issue:\n"
+                + "\n"
+                + "1. Open the file with the proper application and resave the file as another format. This could be an update version of the file, or as something compatible with the Research Knowledge Manager such as a text file"
+                + "\n"
+                + "2. Remove and delete the file from the repository. When the Research Knowlege Manager encounters a missing file, you'll be given the option to remove it from the system.";
+
+    }
+
+    public enum ErrorType
+    {
+
+        RESAVE, MISSING, OTHER
+
+    }
+
+    private boolean autoTagStatus;
+
+    private final long minimumValidFileSize = 255L;
 
     /**
      * Determines if any data should be locally saved when the system exits
@@ -100,27 +141,26 @@ public class UserInterface extends javax.swing.JFrame
         this.validate();
     }
 
+    private void startTask()
+    {
+        if (this.executingThread != null && !executingThread.isAlive())
+        {
+            this.executingThread.start();
+            this.newMessage("Starting task...");
+        }
+    }
+
     /**
      * Sets the various task buttons depending on the state of the system
      *
      * @see ResearchKnowledgeManager.activeState
      */
-    void handleState()
+    final void handleState()
     {
         switch (rm.actionStatus)
         {
-            case READY:
-            {
-                startButton.setEnabled(true);
-                cancelButton.setEnabled(true);
-                resumeButton.setEnabled(false);
-                pauseButton.setEnabled(false);
-                break;
-            }
-
             case INACTIVE:
             {
-                startButton.setEnabled(false);
                 cancelButton.setEnabled(false);
                 resumeButton.setEnabled(false);
                 pauseButton.setEnabled(false);
@@ -129,7 +169,6 @@ public class UserInterface extends javax.swing.JFrame
 
             case ACTIVE:
             {
-                startButton.setEnabled(false);
                 cancelButton.setEnabled(true);
                 resumeButton.setEnabled(false);
                 pauseButton.setEnabled(true);
@@ -138,7 +177,6 @@ public class UserInterface extends javax.swing.JFrame
 
             case PAUSED:
             {
-                startButton.setEnabled(false);
                 cancelButton.setEnabled(true);
                 resumeButton.setEnabled(true);
                 pauseButton.setEnabled(false);
@@ -231,11 +269,11 @@ public class UserInterface extends javax.swing.JFrame
             this.TagItemListModel.clear();
 
             // List should already be ensured to no have duplicates
-            for (int i = 0; i < rm.Tags.size(); i++)
+            for (TagClass Tag : rm.Tags)
             {
-                if (!TagItemListModel.contains(rm.Tags.get(i)))
+                if (!TagItemListModel.contains(Tag))
                 {
-                    this.TagItemListModel.addElement(this.rm.Tags.get(i));
+                    this.TagItemListModel.addElement(Tag);
                 }
             }
 
@@ -246,7 +284,39 @@ public class UserInterface extends javax.swing.JFrame
     public void autoIndexAll()
     {
         this.indexAllFilesMenuItemActionPerformed(null);
-        this.startButtonActionPerformed(null);
+        startTask();
+    }
+
+    public void ErrorHandleFunction(Vector<FileClass> badFileList, ErrorType error_status)
+    {
+        DefaultListModel buffer = new DefaultListModel();
+
+        for (FileClass fc : badFileList)
+        {
+            buffer.addElement(fc.toString());
+        }
+
+        if (error_status == UserInterface.ErrorType.RESAVE)
+        {
+            this.resaveErrorMessageTextArea.setText(UserInterface.StringErrorMessages.resaveErrorMessage);
+            this.resaveFileJList.setModel(buffer);
+            this.resaveErrorHandlingFilesDialog.setVisible(true);
+        }
+
+        else if (error_status == UserInterface.ErrorType.MISSING)
+        {
+            this.missingErrorMessageTextArea.setText(UserInterface.StringErrorMessages.missingErrorMessage);
+            this.missingFileJList.setModel(buffer);
+            this.missingErrorHandlingFilesDialog.setVisible(true);
+        }
+
+        else if (error_status == UserInterface.ErrorType.OTHER)
+        {
+            this.otherErrorMessageTextArea.setText(UserInterface.StringErrorMessages.otherErrorMessage);
+            this.otherFileJList.setModel(buffer);
+            this.otherErrorHandlingFilesDialog.setVisible(true);
+        }
+
     }
 
     /**
@@ -258,6 +328,7 @@ public class UserInterface extends javax.swing.JFrame
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents()
     {
+        java.awt.GridBagConstraints gridBagConstraints;
         bindingGroup = new org.jdesktop.beansbinding.BindingGroup();
 
         modifyKeywordsButton = new javax.swing.JButton();
@@ -270,23 +341,50 @@ public class UserInterface extends javax.swing.JFrame
         SearchResultsPopupMenu = new javax.swing.JPopupMenu();
         OpenFilePopupMenuItem = new javax.swing.JMenuItem();
         RootFolderPopupMenuItem = new javax.swing.JMenuItem();
-        TagFilePopupMenuItem = new javax.swing.JMenuItem();
+        jSeparator4 = new javax.swing.JPopupMenu.Separator();
+        AddTagFilePopupMenuItem = new javax.swing.JMenuItem();
+        RemoveTagFilePopupMenuItem = new javax.swing.JMenuItem();
+        deleteTagFromSystemButton = new javax.swing.JButton();
         newTagDialog = new javax.swing.JDialog();
         addTagDialogButton = new javax.swing.JButton();
         quitTagDialogButton = new javax.swing.JButton();
         userInputTagDialogTextField = new javax.swing.JTextField();
         instructionsTagDialogLabel = new javax.swing.JLabel();
-        deleteTagFromSystemButton = new javax.swing.JButton();
         confirmTagDeleteDialog = new javax.swing.JDialog();
         jScrollPane2 = new javax.swing.JScrollPane();
         jTextPane1 = new javax.swing.JTextPane();
         confirmDeleteTagButton = new javax.swing.JButton();
         cancelDeleteTagButton = new javax.swing.JButton();
+        autoTagDialog = new javax.swing.JDialog();
+        TagListItemScrollPane1 = new javax.swing.JScrollPane();
+        TagListAutoTag = new javax.swing.JList();
+        sensitivitySlider = new javax.swing.JSlider();
+        autoTagSubmit = new javax.swing.JButton();
+        tagKeyWordScrollPane = new javax.swing.JScrollPane();
+        tagKeywordList = new javax.swing.JList();
+        modifyKeywordsDialog = new javax.swing.JDialog();
+        modifyKeywordScrollPane = new javax.swing.JScrollPane();
+        modifyKeywordsTextArea = new javax.swing.JTextArea();
+        saveKeywordsButton = new javax.swing.JButton();
+        resaveErrorHandlingFilesDialog = new javax.swing.JDialog();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        resaveFileJList = new javax.swing.JList();
+        jScrollPane4 = new javax.swing.JScrollPane();
+        resaveErrorMessageTextArea = new javax.swing.JTextArea();
+        missingErrorHandlingFilesDialog = new javax.swing.JDialog();
+        jScrollPane5 = new javax.swing.JScrollPane();
+        missingFileJList = new javax.swing.JList();
+        jScrollPane6 = new javax.swing.JScrollPane();
+        missingErrorMessageTextArea = new javax.swing.JTextArea();
+        otherErrorHandlingFilesDialog = new javax.swing.JDialog();
+        jScrollPane7 = new javax.swing.JScrollPane();
+        otherFileJList = new javax.swing.JList();
+        jScrollPane8 = new javax.swing.JScrollPane();
+        otherErrorMessageTextArea = new javax.swing.JTextArea();
         TabbedPane = new javax.swing.JTabbedPane();
         welcomePanel = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         welcomeTextArea = new javax.swing.JTextArea();
-        jSeparator3 = new javax.swing.JSeparator();
         FileExplorerTreePane = new javax.swing.JScrollPane();
         FileExplorerTree = new javax.swing.JTree();
         TagTreePane = new javax.swing.JScrollPane();
@@ -296,7 +394,6 @@ public class UserInterface extends javax.swing.JFrame
         statusMessageScrollPane = new javax.swing.JScrollPane();
         statusList = new javax.swing.JList();
         PrimaryActionPanel = new javax.swing.JPanel();
-        startButton = new javax.swing.JButton();
         resumeButton = new javax.swing.JButton();
         pauseButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
@@ -306,25 +403,25 @@ public class UserInterface extends javax.swing.JFrame
         TagItemSearchList = new javax.swing.JList();
         SearchKeywordScrollPane = new javax.swing.JScrollPane();
         SearchKeyWordsTextArea = new javax.swing.JTextArea();
-        StartSearchButton = new javax.swing.JButton();
+        PerformSearchButton = new javax.swing.JButton();
         SearchResultsListScrollPane = new javax.swing.JScrollPane();
         searchResultsList = new javax.swing.JList();
+        searchSlider = new javax.swing.JSlider();
         progressBar = new javax.swing.JProgressBar();
         MenuBar = new javax.swing.JMenuBar();
         SystemMenu = new javax.swing.JMenu();
-        changeRepositoryFolderMenuItem = new javax.swing.JMenuItem();
-        jSeparator1 = new javax.swing.JPopupMenu.Separator();
-        jSeparator2 = new javax.swing.JPopupMenu.Separator();
-        cleanDataFilesMenuItem = new javax.swing.JMenuItem();
-        jSeparator5 = new javax.swing.JPopupMenu.Separator();
-        safelyExitSystem = new javax.swing.JMenuItem();
         openHelpDocumentMenuItem = new javax.swing.JMenuItem();
+        jSeparator7 = new javax.swing.JPopupMenu.Separator();
+        changeRepositoryFolderMenuItem = new javax.swing.JMenuItem();
+        jSeparator3 = new javax.swing.JPopupMenu.Separator();
+        cleanDataFilesMenuItem = new javax.swing.JMenuItem();
+        jSeparator6 = new javax.swing.JPopupMenu.Separator();
+        safelyExitSystem = new javax.swing.JMenuItem();
         TagsMenu = new javax.swing.JMenu();
         automaticallyTagFilesMenuItem = new javax.swing.JMenuItem();
-        SearchesMenu = new javax.swing.JMenu();
-        initiateSearchQueryMenuItem = new javax.swing.JMenuItem();
         IndexingMenu = new javax.swing.JMenu();
         indexAllFilesMenuItem = new javax.swing.JMenuItem();
+        jSeparator8 = new javax.swing.JPopupMenu.Separator();
         indexNewFilesMenuItem = new javax.swing.JMenuItem();
 
         modifyKeywordsButton.setFont(new java.awt.Font("Verdana", 1, 10)); // NOI18N
@@ -332,6 +429,13 @@ public class UserInterface extends javax.swing.JFrame
         modifyKeywordsButton.setActionCommand("");
         modifyKeywordsButton.setAlignmentX(0.5F);
         modifyKeywordsButton.setBorder(javax.swing.BorderFactory.createEtchedBorder(javax.swing.border.EtchedBorder.RAISED));
+        modifyKeywordsButton.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                modifyKeywordsButtonActionPerformed(evt);
+            }
+        });
 
         removeTagFromFileButton.setFont(new java.awt.Font("Verdana", 1, 10)); // NOI18N
         removeTagFromFileButton.setText("Remove Tag(s) from File");
@@ -432,28 +536,41 @@ public class UserInterface extends javax.swing.JFrame
             }
         });
         SearchResultsPopupMenu.add(RootFolderPopupMenuItem);
+        SearchResultsPopupMenu.add(jSeparator4);
 
-        TagFilePopupMenuItem.setFont(new java.awt.Font("Verdana", 0, 10)); // NOI18N
-        TagFilePopupMenuItem.setText("Tag File(s)");
-        TagFilePopupMenuItem.setToolTipText("Tags the selected files with the tags selected under \"" + this.tagSearchListName + "\" window");
-        TagFilePopupMenuItem.addActionListener(new java.awt.event.ActionListener()
+        AddTagFilePopupMenuItem.setFont(new java.awt.Font("Verdana", 0, 10)); // NOI18N
+        AddTagFilePopupMenuItem.setText("Tag Selected File(s)");
+        AddTagFilePopupMenuItem.setToolTipText("Tags the selected files with the tags selected under \"" + this.tagSearchListName + "\" window");
+        AddTagFilePopupMenuItem.addActionListener(new java.awt.event.ActionListener()
         {
             public void actionPerformed(java.awt.event.ActionEvent evt)
             {
-                TagFilePopupMenuItemActionPerformed(evt);
+                AddTagFilePopupMenuItemActionPerformed(evt);
             }
         });
-        SearchResultsPopupMenu.add(TagFilePopupMenuItem);
+        SearchResultsPopupMenu.add(AddTagFilePopupMenuItem);
+
+        RemoveTagFilePopupMenuItem.setText("jMenuItem1");
+        SearchResultsPopupMenu.add(RemoveTagFilePopupMenuItem);
+
+        deleteTagFromSystemButton.setFont(new java.awt.Font("Verdana", 1, 10)); // NOI18N
+        deleteTagFromSystemButton.setText("Delete Tag From System");
+        deleteTagFromSystemButton.setToolTipText("Removes all instances of a tag from the system");
+        deleteTagFromSystemButton.setBorder(javax.swing.BorderFactory.createEtchedBorder(javax.swing.border.EtchedBorder.RAISED));
+        deleteTagFromSystemButton.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                deleteTagFromSystemButtonActionPerformed(evt);
+            }
+        });
 
         newTagDialog.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         newTagDialog.setTitle("Add New Tag to Research Knowledge Manager");
         newTagDialog.setAlwaysOnTop(true);
         newTagDialog.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
-        newTagDialog.setMaximumSize(this.newTagDialog.getPreferredSize());
-        newTagDialog.setMinimumSize(this.newTagDialog.getPreferredSize());
+        newTagDialog.setMinimumSize(newTagDialog.getPreferredSize());
         newTagDialog.setModal(true);
-        newTagDialog.setPreferredSize(new java.awt.Dimension(410, 151));
-        newTagDialog.setResizable(false);
         newTagDialog.setType(java.awt.Window.Type.UTILITY);
         newTagDialog.addWindowListener(new java.awt.event.WindowAdapter()
         {
@@ -492,6 +609,7 @@ public class UserInterface extends javax.swing.JFrame
         userInputTagDialogTextField.setBorder(javax.swing.BorderFactory.createEtchedBorder(javax.swing.border.EtchedBorder.RAISED));
 
         instructionsTagDialogLabel.setFont(new java.awt.Font("Verdana", 0, 12)); // NOI18N
+        instructionsTagDialogLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         instructionsTagDialogLabel.setText("Type in the name of the tag you wish to add to the system");
         instructionsTagDialogLabel.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createEtchedBorder(javax.swing.border.EtchedBorder.RAISED), javax.swing.BorderFactory.createEmptyBorder(4, 4, 4, 4)));
 
@@ -507,7 +625,7 @@ public class UserInterface extends javax.swing.JFrame
                         .addComponent(addTagDialogButton, javax.swing.GroupLayout.PREFERRED_SIZE, 156, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(quitTagDialogButton, javax.swing.GroupLayout.PREFERRED_SIZE, 156, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(instructionsTagDialogLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(instructionsTagDialogLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 408, Short.MAX_VALUE))
                 .addContainerGap())
         );
         newTagDialogLayout.setVerticalGroup(
@@ -515,7 +633,7 @@ public class UserInterface extends javax.swing.JFrame
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, newTagDialogLayout.createSequentialGroup()
                 .addGap(18, 18, 18)
                 .addComponent(instructionsTagDialogLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(userInputTagDialogTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(newTagDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -526,25 +644,11 @@ public class UserInterface extends javax.swing.JFrame
 
         this.newTagDialog.setSize(this.newTagDialog.getPreferredSize());
 
-        deleteTagFromSystemButton.setFont(new java.awt.Font("Verdana", 1, 10)); // NOI18N
-        deleteTagFromSystemButton.setText("Delete Tag From System");
-        deleteTagFromSystemButton.setToolTipText("Removes all instances of a tag from the system");
-        deleteTagFromSystemButton.setBorder(javax.swing.BorderFactory.createEtchedBorder(javax.swing.border.EtchedBorder.RAISED));
-        deleteTagFromSystemButton.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
-                deleteTagFromSystemButtonActionPerformed(evt);
-            }
-        });
-
         confirmTagDeleteDialog.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         confirmTagDeleteDialog.setTitle("Tag Deletion Confirmation");
         confirmTagDeleteDialog.setFont(this.getFont());
-        confirmTagDeleteDialog.setMaximumSize(new java.awt.Dimension(466, 162));
         confirmTagDeleteDialog.setMinimumSize(new java.awt.Dimension(466, 162));
         confirmTagDeleteDialog.setModal(true);
-        confirmTagDeleteDialog.setPreferredSize(new java.awt.Dimension(466, 162));
         confirmTagDeleteDialog.setType(java.awt.Window.Type.UTILITY);
 
         jTextPane1.setEditable(false);
@@ -601,15 +705,304 @@ public class UserInterface extends javax.swing.JFrame
                 .addContainerGap())
         );
 
+        autoTagDialog.setAlwaysOnTop(true);
+        autoTagDialog.setFocusableWindowState(false);
+        autoTagDialog.setFont(new java.awt.Font("Verdana", 0, 12)); // NOI18N
+        autoTagDialog.setModal(true);
+        autoTagDialog.setModalExclusionType(java.awt.Dialog.ModalExclusionType.APPLICATION_EXCLUDE);
+        autoTagDialog.setType(java.awt.Window.Type.UTILITY);
+        autoTagDialog.addWindowListener(new java.awt.event.WindowAdapter()
+        {
+            public void windowClosing(java.awt.event.WindowEvent evt)
+            {
+                autoTagDialogWindowClosing(evt);
+            }
+        });
+
+        TagListItemScrollPane1.setBorder(SearchKeywordScrollPane.getBorder());
+        TagListItemScrollPane1.setViewportBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(javax.swing.border.EtchedBorder.RAISED), this.tagSearchListName, javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Verdana", 0, 10)), javax.swing.BorderFactory.createEmptyBorder(4, 4, 4, 4))); // NOI18N
+
+        TagListAutoTag.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createEtchedBorder(javax.swing.border.EtchedBorder.RAISED), javax.swing.BorderFactory.createEmptyBorder(4, 4, 4, 4)));
+        TagListAutoTag.setFont(new java.awt.Font("Verdana", 0, 12)); // NOI18N
+        TagListAutoTag.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        TagListAutoTag.setToolTipText("The list of tags currently in the system. You can select or deselect multiple tags by holding \"Shift\" or \"Control\"");
+        TagListAutoTag.setFocusCycleRoot(true);
+
+        org.jdesktop.beansbinding.Binding binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, TagItemSearchList, org.jdesktop.beansbinding.ELProperty.create("${model}"), TagListAutoTag, org.jdesktop.beansbinding.BeanProperty.create("model"));
+        bindingGroup.addBinding(binding);
+
+        TagListAutoTag.addListSelectionListener(new javax.swing.event.ListSelectionListener()
+        {
+            public void valueChanged(javax.swing.event.ListSelectionEvent evt)
+            {
+                TagListAutoTagValueChanged(evt);
+            }
+        });
+        TagListItemScrollPane1.setViewportView(TagListAutoTag);
+
+        sensitivitySlider.setFont(new java.awt.Font("Verdana", 2, 10)); // NOI18N
+        sensitivitySlider.setMajorTickSpacing(50);
+        sensitivitySlider.setMinorTickSpacing(10);
+        sensitivitySlider.setPaintTicks(true);
+        sensitivitySlider.setSnapToTicks(true);
+        sensitivitySlider.setToolTipText("The sensitivity of the search. If the set of keywords have a certain density in the document, the document will be associated with the selected tag");
+        sensitivitySlider.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(javax.swing.border.EtchedBorder.RAISED), "Search Sensitivity", javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Verdana", 0, 10)), javax.swing.BorderFactory.createEmptyBorder(4, 4, 4, 4))); // NOI18N
+
+        autoTagSubmit.setFont(new java.awt.Font("Verdana", 0, 10)); // NOI18N
+        autoTagSubmit.setText("Search");
+        autoTagSubmit.setEnabled(false);
+        autoTagSubmit.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                autoTagSubmitActionPerformed(evt);
+            }
+        });
+
+        tagKeyWordScrollPane.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createEtchedBorder(javax.swing.border.EtchedBorder.RAISED), javax.swing.BorderFactory.createEmptyBorder(4, 4, 4, 4)));
+        tagKeyWordScrollPane.setViewportBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(javax.swing.border.EtchedBorder.RAISED), "Tag Keywords", javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Verdana", 0, 10)), javax.swing.BorderFactory.createEmptyBorder(4, 4, 4, 4))); // NOI18N
+
+        tagKeywordList.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createEtchedBorder(javax.swing.border.EtchedBorder.RAISED), javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8)));
+        tagKeywordList.setFont(new java.awt.Font("Verdana", 0, 10)); // NOI18N
+        tagKeywordList.setModel(new javax.swing.AbstractListModel()
+        {
+            String[] strings = { "No tag selected!" };
+            public int getSize() { return strings.length; }
+            public Object getElementAt(int i) { return strings[i]; }
+        });
+        tagKeywordList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        tagKeywordList.setFocusable(false);
+        tagKeywordList.setRequestFocusEnabled(false);
+        tagKeywordList.setValueIsAdjusting(true);
+        tagKeywordList.setVerifyInputWhenFocusTarget(false);
+        tagKeywordList.addListSelectionListener(new javax.swing.event.ListSelectionListener()
+        {
+            public void valueChanged(javax.swing.event.ListSelectionEvent evt)
+            {
+                tagKeywordListValueChanged(evt);
+            }
+        });
+        tagKeyWordScrollPane.setViewportView(tagKeywordList);
+
+        javax.swing.GroupLayout autoTagDialogLayout = new javax.swing.GroupLayout(autoTagDialog.getContentPane());
+        autoTagDialog.getContentPane().setLayout(autoTagDialogLayout);
+        autoTagDialogLayout.setHorizontalGroup(
+            autoTagDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(autoTagDialogLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(autoTagDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(sensitivitySlider, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(autoTagSubmit, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(autoTagDialogLayout.createSequentialGroup()
+                        .addComponent(TagListItemScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 300, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(6, 6, 6)
+                        .addComponent(tagKeyWordScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 270, Short.MAX_VALUE)))
+                .addContainerGap())
+        );
+        autoTagDialogLayout.setVerticalGroup(
+            autoTagDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(autoTagDialogLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(autoTagDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(TagListItemScrollPane1)
+                    .addComponent(tagKeyWordScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 282, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(sensitivitySlider, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(autoTagSubmit)
+                .addContainerGap())
+        );
+
+        Hashtable sliderLabels = new Hashtable();
+        for(int i = 0; i <= this.sensitivitySlider.getMaximum(); i += this.sensitivitySlider.getMinorTickSpacing())
+        {
+            sliderLabels.putIfAbsent(i, new JLabel(((float)i/10) + "%"));
+        }
+
+        this.sensitivitySlider.setLabelTable(sliderLabels);
+        this.sensitivitySlider.setPaintLabels(true);
+
+        this.autoTagDialog.setSize(this.autoTagDialog.getPreferredSize());
+
+        modifyKeywordsDialog.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        modifyKeywordsDialog.setFont(new java.awt.Font("Verdana", 0, 10)); // NOI18N
+        modifyKeywordsDialog.setMinimumSize(modifyKeywordsDialog.getPreferredSize());
+        modifyKeywordsDialog.setModal(true);
+        modifyKeywordsDialog.setType(java.awt.Window.Type.UTILITY);
+
+        modifyKeywordScrollPane.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createEtchedBorder(javax.swing.border.EtchedBorder.RAISED), javax.swing.BorderFactory.createEmptyBorder(4, 4, 4, 4)));
+        modifyKeywordScrollPane.setViewportBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(javax.swing.border.EtchedBorder.RAISED), "Tag Keywords", javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Verdana", 0, 10)), javax.swing.BorderFactory.createEmptyBorder(4, 4, 4, 4))); // NOI18N
+
+        modifyKeywordsTextArea.setColumns(20);
+        modifyKeywordsTextArea.setRows(5);
+        modifyKeywordsTextArea.setWrapStyleWord(true);
+        modifyKeywordsTextArea.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createEtchedBorder(javax.swing.border.EtchedBorder.RAISED), javax.swing.BorderFactory.createEmptyBorder(4, 4, 4, 4)));
+        modifyKeywordScrollPane.setViewportView(modifyKeywordsTextArea);
+
+        saveKeywordsButton.setFont(new java.awt.Font("Verdana", 1, 10)); // NOI18N
+        saveKeywordsButton.setText("Save Keywords");
+        saveKeywordsButton.setBorder(javax.swing.BorderFactory.createEtchedBorder(javax.swing.border.EtchedBorder.RAISED));
+        saveKeywordsButton.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                saveKeywordsButtonActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout modifyKeywordsDialogLayout = new javax.swing.GroupLayout(modifyKeywordsDialog.getContentPane());
+        modifyKeywordsDialog.getContentPane().setLayout(modifyKeywordsDialogLayout);
+        modifyKeywordsDialogLayout.setHorizontalGroup(
+            modifyKeywordsDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(modifyKeywordsDialogLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(modifyKeywordsDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(saveKeywordsButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(modifyKeywordScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 387, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+        modifyKeywordsDialogLayout.setVerticalGroup(
+            modifyKeywordsDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(modifyKeywordsDialogLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(modifyKeywordScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 190, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(saveKeywordsButton)
+                .addContainerGap())
+        );
+
+        this.modifyKeywordsDialog.setSize(this.modifyKeywordsDialog.getPreferredSize().width,this.modifyKeywordsDialog.getPreferredSize().height + 40);
+
+        resaveErrorHandlingFilesDialog.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        resaveErrorHandlingFilesDialog.setTitle("Potential File Formatting Issues!");
+        resaveErrorHandlingFilesDialog.setType(java.awt.Window.Type.POPUP);
+
+        resaveFileJList.setFont(new java.awt.Font("Verdana", 0, 10)); // NOI18N
+        jScrollPane3.setViewportView(resaveFileJList);
+
+        resaveErrorMessageTextArea.setEditable(false);
+        resaveErrorMessageTextArea.setColumns(20);
+        resaveErrorMessageTextArea.setFont(new java.awt.Font("Verdana", 0, 12)); // NOI18N
+        resaveErrorMessageTextArea.setLineWrap(true);
+        resaveErrorMessageTextArea.setRows(5);
+        resaveErrorMessageTextArea.setToolTipText("");
+        resaveErrorMessageTextArea.setWrapStyleWord(true);
+        resaveErrorMessageTextArea.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createEtchedBorder(javax.swing.border.EtchedBorder.RAISED), javax.swing.BorderFactory.createEmptyBorder(4, 4, 4, 4)));
+        resaveErrorMessageTextArea.setOpaque(false);
+        jScrollPane4.setViewportView(resaveErrorMessageTextArea);
+
+        javax.swing.GroupLayout resaveErrorHandlingFilesDialogLayout = new javax.swing.GroupLayout(resaveErrorHandlingFilesDialog.getContentPane());
+        resaveErrorHandlingFilesDialog.getContentPane().setLayout(resaveErrorHandlingFilesDialogLayout);
+        resaveErrorHandlingFilesDialogLayout.setHorizontalGroup(
+            resaveErrorHandlingFilesDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, resaveErrorHandlingFilesDialogLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(resaveErrorHandlingFilesDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 550, Short.MAX_VALUE)
+                    .addComponent(jScrollPane3))
+                .addContainerGap())
+        );
+        resaveErrorHandlingFilesDialogLayout.setVerticalGroup(
+            resaveErrorHandlingFilesDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, resaveErrorHandlingFilesDialogLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 194, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 207, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+
+        this.resaveErrorHandlingFilesDialog.setSize(this.resaveErrorHandlingFilesDialog.getPreferredSize());
+
+        missingErrorHandlingFilesDialog.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        missingErrorHandlingFilesDialog.setTitle("Missing Files Detected!");
+        missingErrorHandlingFilesDialog.setType(java.awt.Window.Type.POPUP);
+
+        missingFileJList.setFont(new java.awt.Font("Verdana", 0, 10)); // NOI18N
+        jScrollPane5.setViewportView(missingFileJList);
+
+        missingErrorMessageTextArea.setEditable(false);
+        missingErrorMessageTextArea.setColumns(20);
+        missingErrorMessageTextArea.setFont(new java.awt.Font("Verdana", 0, 12)); // NOI18N
+        missingErrorMessageTextArea.setLineWrap(true);
+        missingErrorMessageTextArea.setRows(5);
+        missingErrorMessageTextArea.setToolTipText("");
+        missingErrorMessageTextArea.setWrapStyleWord(true);
+        missingErrorMessageTextArea.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createEtchedBorder(javax.swing.border.EtchedBorder.RAISED), javax.swing.BorderFactory.createEmptyBorder(4, 4, 4, 4)));
+        missingErrorMessageTextArea.setOpaque(false);
+        jScrollPane6.setViewportView(missingErrorMessageTextArea);
+
+        javax.swing.GroupLayout missingErrorHandlingFilesDialogLayout = new javax.swing.GroupLayout(missingErrorHandlingFilesDialog.getContentPane());
+        missingErrorHandlingFilesDialog.getContentPane().setLayout(missingErrorHandlingFilesDialogLayout);
+        missingErrorHandlingFilesDialogLayout.setHorizontalGroup(
+            missingErrorHandlingFilesDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(missingErrorHandlingFilesDialogLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(missingErrorHandlingFilesDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane6, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 776, Short.MAX_VALUE)
+                    .addComponent(jScrollPane5, javax.swing.GroupLayout.Alignment.TRAILING))
+                .addContainerGap())
+        );
+        missingErrorHandlingFilesDialogLayout.setVerticalGroup(
+            missingErrorHandlingFilesDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, missingErrorHandlingFilesDialogLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jScrollPane6, javax.swing.GroupLayout.PREFERRED_SIZE, 194, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 376, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+
+        this.missingErrorHandlingFilesDialog.setSize(this.missingErrorHandlingFilesDialog.getPreferredSize());
+
+        otherErrorHandlingFilesDialog.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        otherErrorHandlingFilesDialog.setTitle("Unknown Errors Detected!");
+        otherErrorHandlingFilesDialog.setType(java.awt.Window.Type.POPUP);
+
+        otherFileJList.setFont(new java.awt.Font("Verdana", 0, 10)); // NOI18N
+        jScrollPane7.setViewportView(otherFileJList);
+
+        otherErrorMessageTextArea.setEditable(false);
+        otherErrorMessageTextArea.setColumns(20);
+        otherErrorMessageTextArea.setFont(new java.awt.Font("Verdana", 0, 12)); // NOI18N
+        otherErrorMessageTextArea.setLineWrap(true);
+        otherErrorMessageTextArea.setRows(5);
+        otherErrorMessageTextArea.setToolTipText("");
+        otherErrorMessageTextArea.setWrapStyleWord(true);
+        otherErrorMessageTextArea.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createEtchedBorder(javax.swing.border.EtchedBorder.RAISED), javax.swing.BorderFactory.createEmptyBorder(4, 4, 4, 4)));
+        otherErrorMessageTextArea.setOpaque(false);
+        jScrollPane8.setViewportView(otherErrorMessageTextArea);
+
+        javax.swing.GroupLayout otherErrorHandlingFilesDialogLayout = new javax.swing.GroupLayout(otherErrorHandlingFilesDialog.getContentPane());
+        otherErrorHandlingFilesDialog.getContentPane().setLayout(otherErrorHandlingFilesDialogLayout);
+        otherErrorHandlingFilesDialogLayout.setHorizontalGroup(
+            otherErrorHandlingFilesDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, otherErrorHandlingFilesDialogLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(otherErrorHandlingFilesDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jScrollPane8, javax.swing.GroupLayout.DEFAULT_SIZE, 550, Short.MAX_VALUE)
+                    .addComponent(jScrollPane7))
+                .addContainerGap())
+        );
+        otherErrorHandlingFilesDialogLayout.setVerticalGroup(
+            otherErrorHandlingFilesDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, otherErrorHandlingFilesDialogLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jScrollPane8, javax.swing.GroupLayout.PREFERRED_SIZE, 194, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane7, javax.swing.GroupLayout.DEFAULT_SIZE, 207, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+
+        this.otherErrorHandlingFilesDialog.setSize(this.otherErrorHandlingFilesDialog.getPreferredSize());
+
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Research Knowledge Manager - SE Senior Design UTD Fall 2015");
         setBackground(new java.awt.Color(153, 153, 153));
         setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
         setEnabled(false);
         setFont(new java.awt.Font("Verdana", 0, 10)); // NOI18N
-        setMaximumSize(new java.awt.Dimension(1280, 700));
-        setMinimumSize(new java.awt.Dimension(1280, 700));
-        setPreferredSize(new java.awt.Dimension(1280, 700));
+        setMaximumSize(new java.awt.Dimension(0, 0));
         setResizable(false);
         addWindowFocusListener(new java.awt.event.WindowFocusListener()
         {
@@ -657,7 +1050,6 @@ public class UserInterface extends javax.swing.JFrame
         jScrollPane1.setViewportView(welcomeTextArea);
 
         welcomePanel.add(jScrollPane1);
-        welcomePanel.add(jSeparator3);
 
         TabbedPane.addTab("Start", welcomePanel);
 
@@ -707,7 +1099,7 @@ public class UserInterface extends javax.swing.JFrame
         statusMessageScrollPane.setAutoscrolls(true);
 
         statusList.setBorder(javax.swing.BorderFactory.createEtchedBorder(javax.swing.border.EtchedBorder.RAISED));
-        statusList.setFont(new java.awt.Font("Verdana", 2, 10)); // NOI18N
+        statusList.setFont(new java.awt.Font("Verdana", 0, 10)); // NOI18N
         statusList.setModel(this.statusMessages);
         statusList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         statusList.setDropMode(javax.swing.DropMode.ON);
@@ -725,23 +1117,11 @@ public class UserInterface extends javax.swing.JFrame
         statusList.getAccessibleContext().setAccessibleName("statusList");
 
         PrimaryActionPanel.setBackground(new java.awt.Color(204, 204, 204));
-        PrimaryActionPanel.setLayout(new java.awt.GridLayout(1, 0, 2, 0));
-
-        startButton.setFont(new java.awt.Font("Verdana", 1, 10)); // NOI18N
-        startButton.setText("Start Task");
-        startButton.setActionCommand("");
-        startButton.setAlignmentX(0.5F);
-        startButton.setBorder(javax.swing.BorderFactory.createEtchedBorder(javax.swing.border.EtchedBorder.RAISED));
-        startButton.setMargin(new java.awt.Insets(2, 6, 2, 6));
-        startButton.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
-                startButtonActionPerformed(evt);
-            }
-        });
-        PrimaryActionPanel.add(startButton);
-        startButton.getAccessibleContext().setAccessibleDescription("");
+        PrimaryActionPanel.setOpaque(false);
+        java.awt.GridBagLayout PrimaryActionPanelLayout = new java.awt.GridBagLayout();
+        PrimaryActionPanelLayout.columnWidths = new int[] {0, 5, 0, 5, 0};
+        PrimaryActionPanelLayout.rowHeights = new int[] {0, 5, 0, 5, 0};
+        PrimaryActionPanel.setLayout(PrimaryActionPanelLayout);
 
         resumeButton.setFont(new java.awt.Font("Verdana", 1, 10)); // NOI18N
         resumeButton.setText("Resume Task");
@@ -756,7 +1136,14 @@ public class UserInterface extends javax.swing.JFrame
                 resumeButtonActionPerformed(evt);
             }
         });
-        PrimaryActionPanel.add(resumeButton);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 0.5;
+        gridBagConstraints.insets = new java.awt.Insets(20, 0, 20, 0);
+        PrimaryActionPanel.add(resumeButton, gridBagConstraints);
         resumeButton.getAccessibleContext().setAccessibleDescription("");
 
         pauseButton.setFont(new java.awt.Font("Verdana", 1, 10)); // NOI18N
@@ -772,7 +1159,14 @@ public class UserInterface extends javax.swing.JFrame
                 pauseButtonActionPerformed(evt);
             }
         });
-        PrimaryActionPanel.add(pauseButton);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 0.5;
+        gridBagConstraints.insets = new java.awt.Insets(20, 0, 20, 0);
+        PrimaryActionPanel.add(pauseButton, gridBagConstraints);
         pauseButton.getAccessibleContext().setAccessibleDescription("");
 
         cancelButton.setFont(new java.awt.Font("Verdana", 1, 10)); // NOI18N
@@ -788,7 +1182,14 @@ public class UserInterface extends javax.swing.JFrame
                 cancelButtonActionPerformed(evt);
             }
         });
-        PrimaryActionPanel.add(cancelButton);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 0.5;
+        gridBagConstraints.insets = new java.awt.Insets(20, 0, 20, 0);
+        PrimaryActionPanel.add(cancelButton, gridBagConstraints);
         cancelButton.getAccessibleContext().setAccessibleDescription("");
 
         mainPanel.setBackground(new java.awt.Color(229, 229, 229));
@@ -801,12 +1202,12 @@ public class UserInterface extends javax.swing.JFrame
         TagListItemScrollPane.setBorder(SearchKeywordScrollPane.getBorder());
         TagListItemScrollPane.setViewportBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(javax.swing.border.EtchedBorder.RAISED), this.tagSearchListName, javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Verdana", 0, 10)), javax.swing.BorderFactory.createEmptyBorder(4, 4, 4, 4))); // NOI18N
 
-        TagItemSearchList.setBorder(javax.swing.BorderFactory.createEtchedBorder(javax.swing.border.EtchedBorder.RAISED));
-        TagItemSearchList.setFont(new java.awt.Font("Verdana", 0, 12)); // NOI18N
+        TagItemSearchList.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createEtchedBorder(javax.swing.border.EtchedBorder.RAISED), javax.swing.BorderFactory.createEmptyBorder(4, 4, 4, 4)));
+        TagItemSearchList.setFont(new java.awt.Font("Verdana", 0, 10)); // NOI18N
         TagItemSearchList.setModel(this.TagItemListModel);
         TagItemSearchList.setToolTipText("The list of tags currently in the system. You can select or deselect multiple tags by holding \"Shift\" or \"Control\"");
 
-        org.jdesktop.beansbinding.Binding binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ, mainPanel, org.jdesktop.beansbinding.ELProperty.create("${enabled}"), TagItemSearchList, org.jdesktop.beansbinding.BeanProperty.create("enabled"));
+        binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ, mainPanel, org.jdesktop.beansbinding.ELProperty.create("${enabled}"), TagItemSearchList, org.jdesktop.beansbinding.BeanProperty.create("enabled"));
         bindingGroup.addBinding(binding);
 
         TagListItemScrollPane.setViewportView(TagItemSearchList);
@@ -814,32 +1215,30 @@ public class UserInterface extends javax.swing.JFrame
         SearchKeywordScrollPane.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createEtchedBorder(javax.swing.border.EtchedBorder.RAISED), javax.swing.BorderFactory.createEmptyBorder(4, 4, 4, 4)));
         SearchKeywordScrollPane.setViewportBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(javax.swing.border.EtchedBorder.RAISED), "Keyword Query Terms", javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Verdana", 0, 10)), javax.swing.BorderFactory.createEmptyBorder(4, 4, 4, 4))); // NOI18N
 
-        SearchKeyWordsTextArea.setEditable(false);
-        SearchKeyWordsTextArea.setBackground(new java.awt.Color(204, 204, 204));
         SearchKeyWordsTextArea.setColumns(25);
-        SearchKeyWordsTextArea.setFont(new java.awt.Font("Verdana", 0, 12)); // NOI18N
+        SearchKeyWordsTextArea.setFont(new java.awt.Font("Verdana", 0, 10)); // NOI18N
         SearchKeyWordsTextArea.setBorder(javax.swing.BorderFactory.createEtchedBorder(javax.swing.border.EtchedBorder.RAISED, java.awt.Color.white, null));
-        SearchKeyWordsTextArea.setEnabled(false);
 
         binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ, mainPanel, org.jdesktop.beansbinding.ELProperty.create("${enabled}"), SearchKeyWordsTextArea, org.jdesktop.beansbinding.BeanProperty.create("enabled"));
         bindingGroup.addBinding(binding);
 
         SearchKeywordScrollPane.setViewportView(SearchKeyWordsTextArea);
 
-        StartSearchButton.setText("Perform Search");
-        StartSearchButton.setToolTipText("Searches for files with the specified tags and/or keywords");
-        StartSearchButton.setActionCommand("");
-        StartSearchButton.setAlignmentX(0.5F);
-        StartSearchButton.setBorder(javax.swing.BorderFactory.createEtchedBorder(javax.swing.border.EtchedBorder.RAISED));
+        PerformSearchButton.setFont(new java.awt.Font("Verdana", 1, 10)); // NOI18N
+        PerformSearchButton.setText("Perform Search");
+        PerformSearchButton.setToolTipText("Searches for files with the specified tags and/or keywords");
+        PerformSearchButton.setActionCommand("");
+        PerformSearchButton.setAlignmentX(0.5F);
+        PerformSearchButton.setBorder(javax.swing.BorderFactory.createEtchedBorder(javax.swing.border.EtchedBorder.RAISED));
 
-        binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ, mainPanel, org.jdesktop.beansbinding.ELProperty.create("${enabled}"), StartSearchButton, org.jdesktop.beansbinding.BeanProperty.create("enabled"));
+        binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ, mainPanel, org.jdesktop.beansbinding.ELProperty.create("${enabled}"), PerformSearchButton, org.jdesktop.beansbinding.BeanProperty.create("enabled"));
         bindingGroup.addBinding(binding);
 
-        StartSearchButton.addActionListener(new java.awt.event.ActionListener()
+        PerformSearchButton.addActionListener(new java.awt.event.ActionListener()
         {
             public void actionPerformed(java.awt.event.ActionEvent evt)
             {
-                StartSearchButtonActionPerformed(evt);
+                PerformSearchButtonActionPerformed(evt);
             }
         });
 
@@ -860,6 +1259,14 @@ public class UserInterface extends javax.swing.JFrame
         });
         SearchResultsListScrollPane.setViewportView(searchResultsList);
 
+        searchSlider.setFont(new java.awt.Font("Verdana", 0, 8)); // NOI18N
+        searchSlider.setMajorTickSpacing(50);
+        searchSlider.setMinorTickSpacing(10);
+        searchSlider.setPaintTicks(true);
+        searchSlider.setSnapToTicks(true);
+        searchSlider.setToolTipText("The sensitivity of the search. If the set of keywords have a certain density in the document, the document will be associated with the selected tag");
+        searchSlider.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(javax.swing.border.EtchedBorder.RAISED), "Search Sensitivity", javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Verdana", 0, 10)), javax.swing.BorderFactory.createEmptyBorder(4, 4, 4, 4))); // NOI18N
+
         javax.swing.GroupLayout mainPanelLayout = new javax.swing.GroupLayout(mainPanel);
         mainPanel.setLayout(mainPanelLayout);
         mainPanelLayout.setHorizontalGroup(
@@ -873,9 +1280,10 @@ public class UserInterface extends javax.swing.JFrame
                     .addGroup(mainPanelLayout.createSequentialGroup()
                         .addComponent(TagListItemScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 246, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(StartSearchButton, javax.swing.GroupLayout.PREFERRED_SIZE, 460, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(SearchKeywordScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 460, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(searchSlider, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 460, Short.MAX_VALUE)
+                            .addComponent(SearchKeywordScrollPane, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 460, Short.MAX_VALUE)
+                            .addComponent(PerformSearchButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                     .addComponent(SearchResultsListScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 712, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
@@ -883,17 +1291,30 @@ public class UserInterface extends javax.swing.JFrame
             mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, mainPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(SearchResultsListScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 227, Short.MAX_VALUE)
+                .addComponent(SearchResultsListScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 180, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(mainPanelLayout.createSequentialGroup()
-                        .addComponent(SearchKeywordScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 128, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(SearchKeywordScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 110, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(StartSearchButton, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(searchSlider, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(PerformSearchButton, javax.swing.GroupLayout.DEFAULT_SIZE, 31, Short.MAX_VALUE))
                     .addComponent(TagListItemScrollPane))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(customActionPane, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(customActionPane, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
+
+        Hashtable standardSliderLabels = new Hashtable();
+        for(int i = 0; i <= this.searchSlider.getMaximum(); i += this.searchSlider.getMinorTickSpacing())
+        {
+            JLabel buffer = new JLabel(((float)i/10) + "%");
+            buffer.setFont(new Font("Verdana", Font.PLAIN, 8));
+            standardSliderLabels.putIfAbsent(i, buffer );
+        }
+
+        this.searchSlider.setLabelTable(standardSliderLabels);
+        this.searchSlider.setPaintLabels(true);
 
         progressBar.setFont(new java.awt.Font("Verdana", 0, 10)); // NOI18N
         progressBar.setMaximum(0);
@@ -910,6 +1331,8 @@ public class UserInterface extends javax.swing.JFrame
                 progressBarStateChanged(evt);
             }
         });
+
+        MenuBar.setFont(new java.awt.Font("Verdana", 1, 12)); // NOI18N
 
         SystemMenu.setText("System");
         SystemMenu.setToolTipText("Contains menu options related to the system");
@@ -928,6 +1351,20 @@ public class UserInterface extends javax.swing.JFrame
             }
         });
 
+        openHelpDocumentMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F1, 0));
+        openHelpDocumentMenuItem.setFont(new java.awt.Font("Verdana", 0, 10)); // NOI18N
+        openHelpDocumentMenuItem.setText("Open Instructional Manual");
+        openHelpDocumentMenuItem.setToolTipText("Opens the Research Knowledge Manager's Instructional Manual");
+        openHelpDocumentMenuItem.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                openHelpDocumentMenuItemActionPerformed(evt);
+            }
+        });
+        SystemMenu.add(openHelpDocumentMenuItem);
+        SystemMenu.add(jSeparator7);
+
         changeRepositoryFolderMenuItem.setFont(new java.awt.Font("Verdana", 0, 10)); // NOI18N
         changeRepositoryFolderMenuItem.setText("Change Repository Folder");
         changeRepositoryFolderMenuItem.setToolTipText("Changes the current repository folder to a specified folder");
@@ -940,8 +1377,7 @@ public class UserInterface extends javax.swing.JFrame
             }
         });
         SystemMenu.add(changeRepositoryFolderMenuItem);
-        SystemMenu.add(jSeparator1);
-        SystemMenu.add(jSeparator2);
+        SystemMenu.add(jSeparator3);
 
         cleanDataFilesMenuItem.setFont(new java.awt.Font("Verdana", 0, 10)); // NOI18N
         cleanDataFilesMenuItem.setText("Clean Data Files");
@@ -956,7 +1392,7 @@ public class UserInterface extends javax.swing.JFrame
         SystemMenu.add(cleanDataFilesMenuItem);
         progressBar.setString("0%");
 
-        SystemMenu.add(jSeparator5);
+        SystemMenu.add(jSeparator6);
 
         safelyExitSystem.setFont(new java.awt.Font("Verdana", 0, 10)); // NOI18N
         safelyExitSystem.setText("Quit");
@@ -971,19 +1407,6 @@ public class UserInterface extends javax.swing.JFrame
         });
         SystemMenu.add(safelyExitSystem);
 
-        openHelpDocumentMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F1, 0));
-        openHelpDocumentMenuItem.setFont(new java.awt.Font("Verdana", 0, 10)); // NOI18N
-        openHelpDocumentMenuItem.setText("Open Instructional Manual");
-        openHelpDocumentMenuItem.setToolTipText("Opens the Research Knowledge Manager's Instructional Manual");
-        openHelpDocumentMenuItem.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
-                openHelpDocumentMenuItemActionPerformed(evt);
-            }
-        });
-        SystemMenu.add(openHelpDocumentMenuItem);
-
         MenuBar.add(SystemMenu);
 
         TagsMenu.setText("Tags");
@@ -992,24 +1415,17 @@ public class UserInterface extends javax.swing.JFrame
 
         automaticallyTagFilesMenuItem.setFont(new java.awt.Font("Verdana", 0, 10)); // NOI18N
         automaticallyTagFilesMenuItem.setText("Automatically Tag Files");
-        automaticallyTagFilesMenuItem.setToolTipText("This featured is not implemented currently...");
-        automaticallyTagFilesMenuItem.setEnabled(false);
+        automaticallyTagFilesMenuItem.setToolTipText("Automatically Finds Files for a User Specified Tag");
+        automaticallyTagFilesMenuItem.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                automaticallyTagFilesMenuItemActionPerformed(evt);
+            }
+        });
         TagsMenu.add(automaticallyTagFilesMenuItem);
 
         MenuBar.add(TagsMenu);
-
-        SearchesMenu.setText("Searches");
-        SearchesMenu.setToolTipText("Contains options related to performing searches");
-        SearchesMenu.setFont(new java.awt.Font("Verdana", 0, 12)); // NOI18N
-
-        initiateSearchQueryMenuItem.setFont(new java.awt.Font("Verdana", 0, 10)); // NOI18N
-        initiateSearchQueryMenuItem.setText("Initiate Search Query");
-        initiateSearchQueryMenuItem.setToolTipText("This featured is not implemented currently...");
-        initiateSearchQueryMenuItem.setActionCommand("initiateSearchQuery");
-        initiateSearchQueryMenuItem.setEnabled(false);
-        SearchesMenu.add(initiateSearchQueryMenuItem);
-
-        MenuBar.add(SearchesMenu);
 
         IndexingMenu.setText("Indexing");
         IndexingMenu.setToolTipText("Contains options related to system indexing");
@@ -1027,6 +1443,7 @@ public class UserInterface extends javax.swing.JFrame
             }
         });
         IndexingMenu.add(indexAllFilesMenuItem);
+        IndexingMenu.add(jSeparator8);
 
         indexNewFilesMenuItem.setFont(new java.awt.Font("Verdana", 0, 10)); // NOI18N
         indexNewFilesMenuItem.setText("Index New Files");
@@ -1052,17 +1469,17 @@ public class UserInterface extends javax.swing.JFrame
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(statusMessageScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 680, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(6, 6, 6)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(PrimaryActionPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(progressBar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(TabbedPane, javax.swing.GroupLayout.PREFERRED_SIZE, 500, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(mainPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap())
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addGroup(layout.createSequentialGroup()
+                            .addComponent(statusMessageScrollPane)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(PrimaryActionPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGroup(layout.createSequentialGroup()
+                            .addComponent(TabbedPane, javax.swing.GroupLayout.PREFERRED_SIZE, 500, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(mainPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(progressBar, javax.swing.GroupLayout.PREFERRED_SIZE, 1250, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1071,23 +1488,20 @@ public class UserInterface extends javax.swing.JFrame
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(mainPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(TabbedPane, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 14, Short.MAX_VALUE)
+                .addGap(12, 12, 12)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(statusMessageScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 106, Short.MAX_VALUE)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(20, 20, 20)
-                        .addComponent(PrimaryActionPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(progressBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE)))
-                .addContainerGap())
+                    .addComponent(statusMessageScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 87, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(PrimaryActionPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 87, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(progressBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         getAccessibleContext().setAccessibleName("Research Knowledge Manager - SE Senior Design");
 
         bindingGroup.bind();
 
-        setSize(new java.awt.Dimension(1283, 700));
+        pack();
         setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
@@ -1098,7 +1512,11 @@ public class UserInterface extends javax.swing.JFrame
     private void changeRepositoryFolderMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_changeRepositoryFolderMenuItemActionPerformed
         try
         {
-            rm.askForRepository();
+            if (rm.askForRepository())
+            {
+                this.indexAllFilesMenuItemActionPerformed(null);
+                this.autoIndexAll();
+            }
         }
         catch (IOException ex)
         {
@@ -1137,7 +1555,6 @@ public class UserInterface extends javax.swing.JFrame
             this.indexNewFilesMenuItem.setEnabled(false);
             this.changeRepositoryFolderMenuItem.setEnabled(false);
             this.automaticallyTagFilesMenuItem.setEnabled(false);
-            this.initiateSearchQueryMenuItem.setEnabled(false);
 
             // Closes the program
             this.formWindowClosing(null);
@@ -1174,32 +1591,7 @@ public class UserInterface extends javax.swing.JFrame
         }
     }//GEN-LAST:event_resumeButtonActionPerformed
 
-    private void startButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startButtonActionPerformed
-        if (executingThread != null && !executingThread.isAlive())
-        {
-            executingThread.start();
-        }
-        else
-        {
-            System.err.println("NULL EXCEPTION ERROR OCCURRED");
-        }
-    }//GEN-LAST:event_startButtonActionPerformed
-
-    private void progressBarStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_progressBarStateChanged
-        if (rm.ui.progressBar.getMaximum() > 0)
-        {
-            rm.ui.progressBar.setString(100 * rm.ui.progressBar.getValue() / rm.ui.progressBar.getMaximum() + "%");
-        }
-        else
-        {
-            rm.ui.progressBar.setString("0%");
-        }
-
-    }//GEN-LAST:event_progressBarStateChanged
-
     private void indexAllFilesMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_indexAllFilesMenuItemActionPerformed
-        rm.setState(ResearchKnowledgeManager.activeState.READY);
-        newMessage("Ready to index all files. Click \"Start Action\" to begin!");
 
         if (this.executingThread == null)
         {
@@ -1215,19 +1607,27 @@ public class UserInterface extends javax.swing.JFrame
                 newMessage("Calculations completed! File indexing will now begin. Please wait for confirmation message...");
                 rm.fileIndexer.indexAllReturn = rm.fileIndexer.indexFilesAll(rm.repositoryFolder, rm);
 
+                this.rm.sortFileClass(this.rm.Files);
+                this.rm.sortTagClass(this.rm.Tags);
+
+                this.refreshTagItemList();
+
                 newMessage(rm.lineSeparator);
                 rm.fileIndexer.saveIndexAll(rm.dataDirectory);
 
                 // Thread cleanup
-                this.rm.sortTagClass(this.rm.Tags);
-                this.rm.sortFileClass(this.rm.Files);
                 this.updateFileTree();
                 this.updateTagTree();
                 newMessage("Finished processing all files!");
+                newMessage(this.rm.lineSeparator);
                 rm.setState(ResearchKnowledgeManager.activeState.INACTIVE);
+                this.progressBar.setString("Task completed!");
+
                 rm.updateLastModified();
                 executingThread = null;
             });
+
+            this.startTask();
         }
 
         else
@@ -1238,9 +1638,6 @@ public class UserInterface extends javax.swing.JFrame
     }//GEN-LAST:event_indexAllFilesMenuItemActionPerformed
 
     private void indexNewFilesMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_indexNewFilesMenuItemActionPerformed
-
-        rm.setState(ResearchKnowledgeManager.activeState.READY);
-        newMessage("Ready to index all files. Click \"Start Action\" to begin");
 
         if (this.executingThread == null)
         {
@@ -1260,16 +1657,24 @@ public class UserInterface extends javax.swing.JFrame
                 rm.fileIndexer.saveIndexNew(rm.dataDirectory);
 
                 // Thread cleanup
-                this.rm.sortTagClass(this.rm.Tags);
                 this.rm.sortFileClass(this.rm.Files);
+                this.rm.sortTagClass(this.rm.Tags);
+
+                this.refreshTagItemList();
+
                 this.updateFileTree();
                 this.updateTagTree();
 
                 newMessage("Finished processing new files!");
+                newMessage(rm.lineSeparator);
                 rm.setState(ResearchKnowledgeManager.activeState.INACTIVE);
+
+                this.progressBar.setString("Task completed!");
                 rm.updateLastModified();
                 executingThread = null;
             });
+
+            this.startTask();
         }
 
         else
@@ -1293,14 +1698,6 @@ public class UserInterface extends javax.swing.JFrame
 
         switch (rm.actionStatus)
         {
-            case READY:
-            {
-                // May need to find better alternative to stop() method since the method is deprecated...
-                executingThread.stop();
-                executingThread = null;
-                rm.setState(ResearchKnowledgeManager.activeState.INACTIVE);
-                break;
-            }
             case ACTIVE:
             {
                 // May need to find better alternative to stop() method since the method is deprecated...
@@ -1382,9 +1779,9 @@ public class UserInterface extends javax.swing.JFrame
             for (int h = 0; h < possiblePaths.length && possiblePaths[h].getPath().length == 2; h++)
             {
                 FileClass fileItem = (FileClass) possiblePaths[h].getPath()[1];
-                for (int i = 0; i < selectedValues.size(); i++)
+                for (TagClass selectedValue : selectedValues)
                 {
-                    fileItem.addTag(selectedValues.get(i).toString());
+                    fileItem.addTag(selectedValue.toString());
                     fileItem.associatedTags.sort(null);
                 }
                 this.updateFileTree();
@@ -1402,12 +1799,7 @@ public class UserInterface extends javax.swing.JFrame
         FileTree.getSelectionModel().clearSelection();
     }//GEN-LAST:event_addTagToFileButtonActionPerformed
 
-    private void StartSearchButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_StartSearchButtonActionPerformed
-        if (!this.SearchKeyWordsTextArea.getText().trim().equals(""))
-        {
-            newMessage("Searching with keywords is currently not implemented...");
-            this.SearchKeyWordsTextArea.setText(null);
-        }
+    private void PerformSearchButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_PerformSearchButtonActionPerformed
 
         List<TagClass> selectedTags = this.TagItemSearchList.getSelectedValuesList();
 
@@ -1415,34 +1807,147 @@ public class UserInterface extends javax.swing.JFrame
         {
             newMessage("Search cannot be completed! No tag terms were selected.");
             newMessage(rm.lineSeparator);
+            return;
         }
+
+        else if (this.executingThread == null)
+        {
+            this.executingThread = new Thread(() ->
+            {
+                rm.setState(ResearchKnowledgeManager.activeState.ACTIVE);
+
+                if (this.SearchKeyWordsTextArea.getText().trim().isEmpty())
+                {
+                    newMessage("No keywords selected! Performing search without keywords");
+                    this.SearchKeyWordsTextArea.setText(null);
+                }
+
+                Vector<FileClass> tagResults = new Vector<>();
+
+                newMessage("Performing Tag-based Search...");
+
+                Vector<FileClass> intermediateResults = rm.findTagsComplete(selectedTags);
+
+                if (!this.SearchKeyWordsTextArea.getText().trim().isEmpty())
+                {
+                    ProcessFileTest tagTester = new ProcessFileTest(this.rm);
+                    String[] sbuffer = this.SearchKeyWordsTextArea.getText().split(",");
+                    Vector<String> confirmedKeywords = new Vector<>(5);
+
+                    // Parsing through for the keywords
+                    for (String s : sbuffer)
+                    {
+                        if (!s.isEmpty())
+                        {
+                            confirmedKeywords.add(s.trim());
+                        }
+
+                    }
+
+                    this.progressBar.setValue(0);
+                    this.progressBar.setMaximum(intermediateResults.size());
+
+                    Vector<FileClass> reSaveFiles = new Vector<>(2);
+                    Vector<FileClass> missingFiles = new Vector<>(2);
+                    Vector<FileClass> otherBadFiles = new Vector<>(2);
+
+                    for (FileClass fc : intermediateResults)
+                    {
+                        this.progressBar.setValue(this.progressBar.getValue() + 1);
+                        this.progressBar.setString((int) ((float) 100 * this.progressBar.getValue() / this.progressBar.getMaximum()) + "%");
+
+                        if (tagTester.isProcessableFile(fc))
+                        {
+                            try
+                            {
+                                String documentContent = tagTester.getFileContent(fc);
+
+                                if (documentContent != null && tagTester.TagSearch(confirmedKeywords, documentContent, this.searchSlider.getValue()))
+                                {
+                                    tagResults.add(fc);
+                                }
+                            }
+
+                            catch (org.apache.poi.poifs.filesystem.NotOLE2FileException e)
+                            {
+                                //System.err.println("Found a word file that needs to be resaved: " + fc.toString());
+                                reSaveFiles.add(fc);
+                            }
+
+                            catch (FileNotFoundException e)
+                            {
+                                //System.err.println("Found a file that is missing: " + fc.toString());
+                                missingFiles.add(fc);
+                            }
+
+                            catch (org.apache.poi.poifs.filesystem.OfficeXmlFileException e)
+                            {
+                                //System.err.println("Found a XML file that needs to be resaved:" + fc.toString());
+                                reSaveFiles.add(fc);
+                            }
+
+                            catch (Exception e)
+                            {
+                                otherBadFiles.add(fc);
+                                System.err.println("A file with an undetermined exception was found! " + fc.toString());
+                                System.err.println(e.getClass());
+                            }
+                        }
+
+                        else
+                        {
+                            // newMessage(fc.toString() + " is currently not processable by the system. Removing the file from the result list");
+                        }
+
+                    }
+
+                    if (!reSaveFiles.isEmpty())
+                    {
+                        ErrorHandleFunction(reSaveFiles, UserInterface.ErrorType.RESAVE);
+                    }
+
+                    if (!missingFiles.isEmpty())
+                    {
+                        ErrorHandleFunction(missingFiles, UserInterface.ErrorType.MISSING);
+                    }
+
+                    if (!otherBadFiles.isEmpty())
+                    {
+                        ErrorHandleFunction(otherBadFiles, UserInterface.ErrorType.OTHER);
+                    }
+                }
+
+                else
+                {
+                    tagResults = intermediateResults;
+                }
+
+                DefaultListModel buffer = new DefaultListModel();
+
+                for (FileClass tagResult : tagResults)
+                {
+                    buffer.addElement(tagResult);
+                }
+                updateSearchResultsName(buffer.size());
+
+                this.searchResultsList.setModel(buffer);
+
+                newMessage("Tag search completed! Results are displayed in \"Search Results\"");
+                newMessage(rm.lineSeparator);
+                rm.setState(ResearchKnowledgeManager.activeState.INACTIVE);
+                this.progressBar.setString("Task completed!");
+
+                executingThread = null;
+            });
+
+            this.startTask();
+        }
+
         else
         {
-            newMessage("Performing Tag-based Search...");
-
-            Vector<FileClass> tagResults = rm.findTagsComplete(selectedTags);
-
-            if (this.SearchKeyWordsTextArea.getText().trim().equals(""))
-            {
-                // rm.parseKeyWords(tagResults);
-                // searchKeyWords();
-            }
-
-            DefaultListModel buffer = new DefaultListModel();
-
-            for (int i = 0; i < tagResults.size(); i++)
-            {
-                buffer.addElement(tagResults.get(i));
-            }
-            updateSearchResultsName(buffer.size());
-
-            this.searchResultsList.setModel(buffer);
-
-            newMessage("Tag search completed! Results are displayed in \"Search Results\"");
-            newMessage(rm.lineSeparator);
+            newMessage("Could not prepare the system for the selected task! A task is already in execution!");
         }
-
-    }//GEN-LAST:event_StartSearchButtonActionPerformed
+    }//GEN-LAST:event_PerformSearchButtonActionPerformed
 
     private void searchResultsListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_searchResultsListValueChanged
 
@@ -1484,10 +1989,10 @@ public class UserInterface extends javax.swing.JFrame
         {
             try
             {
-                for (int i = 0; i < selectedItems.size(); i++)
+                for (FileClass selectedItem : selectedItems)
                 {
-                    newMessage("Launching the following file: " + selectedItems.get(i).toString());
-                    Desktop.getDesktop().open(new File(selectedItems.get(i).toString()));
+                    newMessage("Launching the following file: " + selectedItem.toString());
+                    Desktop.getDesktop().open(new File(selectedItem.toString()));
                 }
             }
             catch (IOException ex)
@@ -1510,10 +2015,9 @@ public class UserInterface extends javax.swing.JFrame
         {
             try
             {
-                for (int i = 0; i < selectedItems.size(); i++)
+                for (FileClass selectedItem : selectedItems)
                 {
-                    File buffer = new File(selectedItems.get(i).toString());
-
+                    File buffer = new File(selectedItem.toString());
                     newMessage("Launching the following folder: " + buffer.getParent());
                     Desktop.getDesktop().open(new File(buffer.getParent()));
                 }
@@ -1683,8 +2187,7 @@ public class UserInterface extends javax.swing.JFrame
                     if (TagTree.getSelectionCount() == 1)
                     {
                         // Tags currently do not use keywords so this button will always be disabled
-                        // this.modifyKeywordsButton.setEnabled(true);
-                        this.modifyKeywordsButton.setEnabled(false);
+                        this.modifyKeywordsButton.setEnabled(true);
                         this.deleteTagFromSystemButton.setEnabled(true);
                     }
 
@@ -1701,8 +2204,8 @@ public class UserInterface extends javax.swing.JFrame
         }
     }//GEN-LAST:event_TagTreeValueChanged
 
-    private void TagFilePopupMenuItemActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_TagFilePopupMenuItemActionPerformed
-    {//GEN-HEADEREND:event_TagFilePopupMenuItemActionPerformed
+    private void AddTagFilePopupMenuItemActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_AddTagFilePopupMenuItemActionPerformed
+    {//GEN-HEADEREND:event_AddTagFilePopupMenuItemActionPerformed
         List<TagClass> selectedTagValues = this.TagItemSearchList.getSelectedValuesList();
         List<FileClass> selectedFileValues = this.searchResultsList.getSelectedValuesList();
         newMessage("Beginning tagging process...");
@@ -1710,13 +2213,13 @@ public class UserInterface extends javax.swing.JFrame
         if (!selectedTagValues.isEmpty() && !selectedFileValues.isEmpty())
         {
             // Adds selected tags to the selected files
-            for (int i = 0; i < selectedTagValues.size(); i++)
+            for (TagClass selectedTagValue : selectedTagValues)
             {
                 // Adds a tag for each selected file
-                for (int j = 0; j < selectedFileValues.size(); j++)
+                for (FileClass selectedFileValue : selectedFileValues)
                 {
-                    selectedFileValues.get(j).addTag(selectedTagValues.get(i).toString());
-                    selectedFileValues.get(j).associatedTags.sort(null);
+                    selectedFileValue.addTag(selectedTagValue.toString());
+                    selectedFileValue.associatedTags.sort(null);
                 }
             }
 
@@ -1741,7 +2244,7 @@ public class UserInterface extends javax.swing.JFrame
 
         }
         newMessage(rm.lineSeparator);
-    }//GEN-LAST:event_TagFilePopupMenuItemActionPerformed
+    }//GEN-LAST:event_AddTagFilePopupMenuItemActionPerformed
 
     private void addTagDialogButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_addTagDialogButtonActionPerformed
     {//GEN-HEADEREND:event_addTagDialogButtonActionPerformed
@@ -1871,7 +2374,261 @@ public class UserInterface extends javax.swing.JFrame
 
     }//GEN-LAST:event_openHelpDocumentMenuItemActionPerformed
 
+    private void automaticallyTagFilesMenuItemActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_automaticallyTagFilesMenuItemActionPerformed
+    {//GEN-HEADEREND:event_automaticallyTagFilesMenuItemActionPerformed
+        if (this.executingThread == null)
+        {
+            this.autoTagDialog.setVisible(true);
+            int selectionSize = this.TagListAutoTag.getSelectedValuesList().size();
+
+            newMessage("Preparing for automatic tagging...");
+
+            if (this.autoTagStatus == false)
+            {
+                newMessage("Automatic tagging operation cancelled!");
+            }
+
+            else if (selectionSize > 1)
+            {
+                newMessage("Multiple tags selected! Please select one tag!");
+            }
+
+            else if (selectionSize == 0)
+            {
+                newMessage("No tags were selected. Please select one tag!");
+            }
+
+            else if (selectionSize == 1)
+            {
+                this.rm.setState(ResearchKnowledgeManager.activeState.ACTIVE);
+
+                this.executingThread = new Thread(() ->
+                {
+                    TagClass selectedTagClass = ((TagClass) this.TagListAutoTag.getSelectedValue());
+
+                    newMessage("Looking for documents fitting the following tag: " + selectedTagClass.toString());
+
+                    Vector<String> tagKeyWords = selectedTagClass.keywords;
+
+                    if (tagKeyWords != null && tagKeyWords.size() > 0)
+                    {
+                        rm.missingFiles.clear();
+
+                        Vector<FileClass> reSaveFiles = new Vector<>(2);
+                        Vector<FileClass> missingFiles = new Vector<>(2);
+                        Vector<FileClass> otherBadFiles = new Vector<>(2);
+
+                        this.progressBar.setValue(0);
+                        this.progressBar.setMaximum(rm.Files.size());
+
+                        for (FileClass f : rm.Files)
+                        {
+                            this.progressBar.setValue(this.progressBar.getValue() + 1);
+                            this.progressBar.setString((int) ((float) 100 * this.progressBar.getValue() / this.progressBar.getMaximum()) + "%");
+
+                            File buffer = new File(f.toString());
+
+                            if (buffer.exists() && buffer.length() > minimumValidFileSize)
+                            {
+                                ProcessFileTest pft = new ProcessFileTest(this.rm);
+
+                                if (pft.isProcessableFile(f))
+                                {
+                                    try
+                                    {
+                                        String fileContent = pft.getFileContent(f);
+
+                                        if (fileContent != null && pft.TagSearch(tagKeyWords, fileContent, this.sensitivitySlider.getValue()))
+                                        {
+                                            newMessage(f.toString() + " is now associated with the tag: " + selectedTagClass.toString());
+                                            f.addTag(selectedTagClass.toString());
+                                        }
+                                    }
+                                    catch (org.apache.poi.poifs.filesystem.NotOLE2FileException e)
+                                    {
+                                        //System.err.println("Found a word file that needs to be resaved: " + fc.toString());
+                                        reSaveFiles.add(f);
+                                    }
+
+                                    catch (FileNotFoundException e)
+                                    {
+                                        //System.err.println("Found a file that is missing: " + fc.toString());
+                                        missingFiles.add(f);
+                                    }
+
+                                    catch (org.apache.poi.poifs.filesystem.OfficeXmlFileException e)
+                                    {
+                                        //System.err.println("Found a XML file that needs to be resaved:" + fc.toString());
+                                        reSaveFiles.add(f);
+                                    }
+
+                                    catch (Exception e)
+                                    {
+                                        otherBadFiles.add(f);
+                                        // System.err.println("A file with an undetermined exception was found! " + f.toString());
+                                        // e.printStackTrace();
+                                    }
+                                }
+                            }
+
+                            else
+                            {
+                                rm.missingFiles.add(f);
+                            }
+                        }
+
+                        if (!reSaveFiles.isEmpty())
+                        {
+                            ErrorHandleFunction(reSaveFiles, UserInterface.ErrorType.RESAVE);
+                        }
+
+                        if (!missingFiles.isEmpty())
+                        {
+                            ErrorHandleFunction(missingFiles, UserInterface.ErrorType.MISSING);
+                        }
+
+                        if (!otherBadFiles.isEmpty())
+                        {
+                            ErrorHandleFunction(otherBadFiles, UserInterface.ErrorType.OTHER);
+                        }
+
+                    }
+
+                    else
+                    {
+                        newMessage("This tag has no keywords! Search could not be completed...");
+                    }
+
+                    this.TagListAutoTag.clearSelection();
+                    this.rm.setState(ResearchKnowledgeManager.activeState.INACTIVE);
+                    this.executingThread = null;
+
+                    newMessage(this.rm.lineSeparator);
+
+                    this.progressBar.setString("Task completed!");
+
+                });
+
+                this.startTask();
+            }
+
+            else
+            {
+
+            }
+
+        }
+
+        else
+        {
+            newMessage("Could not prepare the system for the selected task! A task is already in execution!");
+        }
+
+    }//GEN-LAST:event_automaticallyTagFilesMenuItemActionPerformed
+
+    private void autoTagSubmitActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_autoTagSubmitActionPerformed
+    {//GEN-HEADEREND:event_autoTagSubmitActionPerformed
+        this.autoTagStatus = true;
+        this.autoTagDialog.setVisible(false);
+    }//GEN-LAST:event_autoTagSubmitActionPerformed
+
+    private void tagKeywordListValueChanged(javax.swing.event.ListSelectionEvent evt)//GEN-FIRST:event_tagKeywordListValueChanged
+    {//GEN-HEADEREND:event_tagKeywordListValueChanged
+        this.tagKeywordList.clearSelection();
+    }//GEN-LAST:event_tagKeywordListValueChanged
+
+    private void TagListAutoTagValueChanged(javax.swing.event.ListSelectionEvent evt)//GEN-FIRST:event_TagListAutoTagValueChanged
+    {//GEN-HEADEREND:event_TagListAutoTagValueChanged
+        DefaultListModel buffer = new DefaultListModel();
+
+        if (this.TagListAutoTag.getSelectedValue() != null)
+        {
+            for (String s : ((TagClass) this.TagListAutoTag.getSelectedValue()).keywords)
+            {
+                buffer.addElement(s);
+            }
+
+            if (buffer.isEmpty())
+            {
+                buffer.addElement("The selected tag has no keywords");
+                this.autoTagSubmit.setEnabled(false);
+            }
+
+            else
+            {
+                this.autoTagSubmit.setEnabled(true);
+            }
+        }
+
+        else
+        {
+            buffer.addElement("No tag selected!");
+            this.autoTagSubmit.setEnabled(false);
+            this.TagListAutoTag.clearSelection();
+        }
+
+        this.tagKeywordList.setModel(buffer);
+    }//GEN-LAST:event_TagListAutoTagValueChanged
+
+    private void autoTagDialogWindowClosing(java.awt.event.WindowEvent evt)//GEN-FIRST:event_autoTagDialogWindowClosing
+    {//GEN-HEADEREND:event_autoTagDialogWindowClosing
+        this.autoTagStatus = false;
+    }//GEN-LAST:event_autoTagDialogWindowClosing
+
+    private void modifyKeywordsButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_modifyKeywordsButtonActionPerformed
+    {//GEN-HEADEREND:event_modifyKeywordsButtonActionPerformed
+        TagClass buffer = (TagClass) this.TagTree.getSelectionPath().getLastPathComponent();
+        String sbuffer = "";
+
+        this.modifyKeywordsDialog.setTitle("Tag Keywords for \"" + buffer.toString() + "\" Tag");
+
+        for (String s : buffer.keywords)
+        {
+            if (!s.isEmpty())
+            {
+                sbuffer += s + ",";
+            }
+        }
+
+        this.modifyKeywordsTextArea.setText(sbuffer);
+        this.modifyKeywordsDialog.setVisible(true);
+
+        // Initialize keyword area
+    }//GEN-LAST:event_modifyKeywordsButtonActionPerformed
+
+    private void saveKeywordsButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_saveKeywordsButtonActionPerformed
+    {//GEN-HEADEREND:event_saveKeywordsButtonActionPerformed
+        TagClass buffer = (TagClass) this.TagTree.getSelectionPath().getLastPathComponent();
+        String[] stringArrayBuffer = this.modifyKeywordsTextArea.getText().split(",");
+        buffer.keywords.clear();
+        for (String s : stringArrayBuffer)
+        {
+            if (!s.isEmpty())
+            {
+                buffer.keywords.add(s.trim().toLowerCase());
+            }
+        }
+
+        newMessage("Keyword(s) successfully saved for the following tag:" + buffer.toString());
+        newMessage(rm.lineSeparator);
+
+        this.modifyKeywordsDialog.dispose();
+    }//GEN-LAST:event_saveKeywordsButtonActionPerformed
+
+    private void progressBarStateChanged(javax.swing.event.ChangeEvent evt)//GEN-FIRST:event_progressBarStateChanged
+    {//GEN-HEADEREND:event_progressBarStateChanged
+        if (rm.ui.progressBar.getMaximum() > 0)
+        {
+            rm.ui.progressBar.setString(100 * rm.ui.progressBar.getValue() / rm.ui.progressBar.getMaximum() + "%");
+        }
+        else
+        {
+            rm.ui.progressBar.setString("0%");
+        }
+    }//GEN-LAST:event_progressBarStateChanged
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JMenuItem AddTagFilePopupMenuItem;
     protected javax.swing.JTree FileExplorerTree;
     private javax.swing.JScrollPane FileExplorerTreePane;
     private javax.swing.JTree FileTree;
@@ -1879,19 +2636,20 @@ public class UserInterface extends javax.swing.JFrame
     private javax.swing.JMenu IndexingMenu;
     private javax.swing.JMenuBar MenuBar;
     private javax.swing.JMenuItem OpenFilePopupMenuItem;
+    private javax.swing.JButton PerformSearchButton;
     private javax.swing.JPanel PrimaryActionPanel;
+    private javax.swing.JMenuItem RemoveTagFilePopupMenuItem;
     private javax.swing.JMenuItem RootFolderPopupMenuItem;
     private javax.swing.JTextArea SearchKeyWordsTextArea;
     private javax.swing.JScrollPane SearchKeywordScrollPane;
     private javax.swing.JScrollPane SearchResultsListScrollPane;
     private javax.swing.JPopupMenu SearchResultsPopupMenu;
-    private javax.swing.JMenu SearchesMenu;
-    private javax.swing.JButton StartSearchButton;
     private javax.swing.JMenu SystemMenu;
     protected javax.swing.JTabbedPane TabbedPane;
-    private javax.swing.JMenuItem TagFilePopupMenuItem;
     private javax.swing.JList TagItemSearchList;
+    private javax.swing.JList TagListAutoTag;
     private javax.swing.JScrollPane TagListItemScrollPane;
+    private javax.swing.JScrollPane TagListItemScrollPane1;
     private javax.swing.JTree TagTree;
     private javax.swing.JScrollPane TagTreePane;
     private javax.swing.JMenu TagsMenu;
@@ -1899,6 +2657,8 @@ public class UserInterface extends javax.swing.JFrame
     private javax.swing.JButton addFileToTagButton;
     private javax.swing.JButton addTagDialogButton;
     private javax.swing.JButton addTagToFileButton;
+    private javax.swing.JDialog autoTagDialog;
+    private javax.swing.JButton autoTagSubmit;
     private javax.swing.JMenuItem automaticallyTagFilesMenuItem;
     private javax.swing.JButton cancelButton;
     private javax.swing.JButton cancelDeleteTagButton;
@@ -1910,31 +2670,53 @@ public class UserInterface extends javax.swing.JFrame
     private javax.swing.JButton deleteTagFromSystemButton;
     private javax.swing.JMenuItem indexAllFilesMenuItem;
     private javax.swing.JMenuItem indexNewFilesMenuItem;
-    private javax.swing.JMenuItem initiateSearchQueryMenuItem;
     private javax.swing.JLabel instructionsTagDialogLabel;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JPopupMenu.Separator jSeparator1;
-    private javax.swing.JPopupMenu.Separator jSeparator2;
-    private javax.swing.JSeparator jSeparator3;
-    private javax.swing.JPopupMenu.Separator jSeparator5;
+    private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JScrollPane jScrollPane4;
+    private javax.swing.JScrollPane jScrollPane5;
+    private javax.swing.JScrollPane jScrollPane6;
+    private javax.swing.JScrollPane jScrollPane7;
+    private javax.swing.JScrollPane jScrollPane8;
+    private javax.swing.JPopupMenu.Separator jSeparator3;
+    private javax.swing.JPopupMenu.Separator jSeparator4;
+    private javax.swing.JPopupMenu.Separator jSeparator6;
+    private javax.swing.JPopupMenu.Separator jSeparator7;
+    private javax.swing.JPopupMenu.Separator jSeparator8;
     private javax.swing.JTextPane jTextPane1;
     private javax.swing.JPanel mainPanel;
+    private javax.swing.JDialog missingErrorHandlingFilesDialog;
+    private javax.swing.JTextArea missingErrorMessageTextArea;
+    private javax.swing.JList missingFileJList;
+    private javax.swing.JScrollPane modifyKeywordScrollPane;
     private javax.swing.JButton modifyKeywordsButton;
+    private javax.swing.JDialog modifyKeywordsDialog;
+    private javax.swing.JTextArea modifyKeywordsTextArea;
     private javax.swing.JButton newTagButton;
     private javax.swing.JDialog newTagDialog;
     private javax.swing.JMenuItem openHelpDocumentMenuItem;
+    private javax.swing.JDialog otherErrorHandlingFilesDialog;
+    private javax.swing.JTextArea otherErrorMessageTextArea;
+    private javax.swing.JList otherFileJList;
     private javax.swing.JButton pauseButton;
     protected javax.swing.JProgressBar progressBar;
     private javax.swing.JButton quitTagDialogButton;
     private javax.swing.JButton removeFileFromTagButton;
     private javax.swing.JButton removeTagFromFileButton;
+    private javax.swing.JDialog resaveErrorHandlingFilesDialog;
+    private javax.swing.JTextArea resaveErrorMessageTextArea;
+    private javax.swing.JList resaveFileJList;
     private javax.swing.JButton resumeButton;
     private javax.swing.JMenuItem safelyExitSystem;
+    private javax.swing.JButton saveKeywordsButton;
     private javax.swing.JList searchResultsList;
-    private javax.swing.JButton startButton;
+    private javax.swing.JSlider searchSlider;
+    private javax.swing.JSlider sensitivitySlider;
     private javax.swing.JList statusList;
     private javax.swing.JScrollPane statusMessageScrollPane;
+    private javax.swing.JScrollPane tagKeyWordScrollPane;
+    private javax.swing.JList tagKeywordList;
     private javax.swing.JTextField userInputTagDialogTextField;
     protected javax.swing.JPanel welcomePanel;
     private javax.swing.JTextArea welcomeTextArea;
